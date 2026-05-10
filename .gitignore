@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+serviceAccountKey.json
+**/serviceAccountKey.json
+
+# Build outputs
+dist/
+build/
+.expo/
+web-build/
+
+# Logs & OS
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Vite
+*.local
+
+# Metro / React Native
+.metro-health-check*
+
+# Testing
+coverage/

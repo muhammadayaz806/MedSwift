@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Lock down by default — mobile & web talk to your Express API + Firebase Auth.
+    // Expand rules only if clients read Firestore directly.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

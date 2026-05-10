@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "liveLocations": {
+      "$driverId": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $driverId"
+      }
+    }
+  }
+}
