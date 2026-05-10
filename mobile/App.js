@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Text, View, ActivityIndicator, StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import LoginScreen from "./src/screens/LoginScreen";
 import RegisterScreen from "./src/screens/RegisterScreen";
@@ -22,27 +23,44 @@ const navTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    background: "#0b1224",
-    card: "#0f172a",
-    text: "#f8fafc",
-    border: "#1e293b",
+    background: "#fff7f7",
+    card: "#7f1d1d",
+    text: "#ffffff",
+    border: "#991b1b",
     primary: "#dc2626",
   },
 };
 
 function UserTabs() {
+  const tabIcons = {
+    Home: "home-variant",
+    Track: "map-marker-path",
+    Support: "face-agent",
+    Profile: "account-circle",
+  };
+
   return (
     <Tabs.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: "#1e4db7" },
+      screenOptions={({ route }) => ({
+        headerStyle: { backgroundColor: "#7f1d1d" },
         headerTintColor: "#fff",
         tabBarStyle: {
-          backgroundColor: "#0f172a",
-          borderTopColor: "#1e293b",
+          backgroundColor: "#7f1d1d",
+          borderTopColor: "#991b1b",
         },
-        tabBarActiveTintColor: "#dc2626",
-        tabBarInactiveTintColor: "#94a3b8",
-      }}
+        tabBarActiveTintColor: "#ffffff",
+        tabBarInactiveTintColor: "#fecaca",
+        tabBarIcon: ({ color, size, focused }) => {
+          const iconName = tabIcons[route.name] || "circle";
+          return (
+            <MaterialCommunityIcons
+              name={iconName}
+              size={focused ? size + 2 : size}
+              color={color}
+            />
+          );
+        },
+      })}
     >
       <Tabs.Screen
         name="Home"
@@ -67,7 +85,7 @@ function DriverNavigator() {
       <DriverStack.Screen
         name="DriverTrip"
         component={DriverTripScreen}
-        options={{ title: "Active trip", headerStyle: { backgroundColor: "#1e4db7" } }}
+        options={{ title: "Active trip", headerStyle: { backgroundColor: "#7f1d1d" } }}
       />
     </DriverStack.Navigator>
   );

@@ -27,17 +27,17 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: "#0b1224", padding: 20, paddingTop: 56 },
-  title: { color: "#fff", fontSize: 24, fontWeight: "800", marginBottom: 16 },
+  flex: { flex: 1, backgroundColor: "#fff7f7", padding: 20, paddingTop: 56 },
+  title: { color: "#7f1d1d", fontSize: 24, fontWeight: "800", marginBottom: 16 },
   card: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#fecaca",
   },
-  label: { color: "#94a3b8", fontSize: 12, textTransform: "uppercase" },
-  value: { color: "#fff", fontSize: 16, marginTop: 4 },
+  label: { color: "#b91c1c", fontSize: 12, textTransform: "uppercase" },
+  value: { color: "#7f1d1d", fontSize: 16, marginTop: 4 },
   btn: {
     marginTop: 24,
     backgroundColor: "#dc2626",

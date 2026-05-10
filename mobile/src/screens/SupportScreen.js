@@ -27,7 +27,7 @@ export default function SupportScreen() {
           for tele-tabeeb style routing.
         </Text>
         <Pressable
-          style={[styles.callBtn, { backgroundColor: "#1e4db7", marginTop: 12 }]}
+          style={[styles.callBtn, { backgroundColor: "#b91c1c", marginTop: 12 }]}
           onPress={() => Linking.openURL("tel:1123")}
         >
           <Text style={styles.callLbl}>Call 1123</Text>
@@ -38,19 +38,19 @@ export default function SupportScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: "#0b1224", padding: 20, paddingTop: 56 },
-  title: { color: "#fff", fontSize: 24, fontWeight: "800", marginBottom: 12 },
-  body: { color: "#cbd5f5", lineHeight: 22 },
-  bodySmall: { color: "#94a3b8", lineHeight: 20, marginTop: 8 },
+  flex: { flex: 1, backgroundColor: "#fff7f7", padding: 20, paddingTop: 56 },
+  title: { color: "#7f1d1d", fontSize: 24, fontWeight: "800", marginBottom: 12 },
+  body: { color: "#991b1b", lineHeight: 22 },
+  bodySmall: { color: "#b91c1c", lineHeight: 20, marginTop: 8 },
   card: {
     marginTop: 20,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#fecaca",
   },
-  cardTitle: { color: "#fff", fontWeight: "700", fontSize: 16 },
+  cardTitle: { color: "#7f1d1d", fontWeight: "700", fontSize: 16 },
   callBtn: {
     marginTop: 12,
     backgroundColor: "#dc2626",

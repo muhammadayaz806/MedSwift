@@ -136,25 +136,25 @@ export default function TrackScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: "#0b1224" },
+  flex: { flex: 1, backgroundColor: "#fff7f7" },
   banner: {
     paddingTop: 52,
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "#1e4db7",
+    backgroundColor: "#7f1d1d",
   },
   title: { color: "#fff", fontSize: 20, fontWeight: "800" },
-  meta: { color: "#dbeafe", marginTop: 4, fontSize: 13 },
+  meta: { color: "#fecaca", marginTop: 4, fontSize: 13 },
   map: { flex: 1 },
   sheet: {
     padding: 16,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#fff",
     borderTopWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#fecaca",
   },
-  sheetTxt: { color: "#e2e8f0" },
+  sheetTxt: { color: "#7f1d1d" },
   row: { flexDirection: "row", alignItems: "center", gap: 12 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  muted: { color: "#94a3b8" },
-  err: { color: "#fecaca", padding: 16 },
+  muted: { color: "#991b1b" },
+  err: { color: "#b91c1c", padding: 16 },
 });
