@@ -19,7 +19,7 @@ API base: `http://localhost:4000` (health check: `/health`).
 ```bash
 cd web-marketing
 cp .env.example .env
-# Optional: set VITE_ORG_REGISTER_URL (defaults to http://localhost:5173/register)
+# Optional: VITE_ORG_REGISTER_URL, VITE_APP_STORE_URL, VITE_PLAY_STORE_URL
 npm install
 npm run dev
 ```

@@ -1,21 +1,25 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
         brand: {
-          bg: "#fff7f7",
-          surface: "#fff5f5",
-          muted: "#fee2e2",
-          border: "#fecaca",
-          soft: "#fca5a5",
-          text: "#7f1d1d",
-          sub: "#991b1b",
-          accent: "#b91c1c",
+          bg: "rgb(var(--brand-bg) / <alpha-value>)",
+          surface: "rgb(var(--brand-surface) / <alpha-value>)",
+          muted: "rgb(var(--brand-muted) / <alpha-value>)",
+          border: "rgb(var(--brand-border) / <alpha-value>)",
+          soft: "rgb(var(--brand-soft) / <alpha-value>)",
+          text: "rgb(var(--brand-text) / <alpha-value>)",
+          sub: "rgb(var(--brand-sub) / <alpha-value>)",
+          accent: "rgb(var(--brand-accent) / <alpha-value>)",
           emergency: "#ef4444",
           red: "#dc2626",
-          dark: "#450a0a",
+          dark: "rgb(var(--brand-dark) / <alpha-value>)",
+          card: "rgb(var(--brand-card) / <alpha-value>)",
+          ink: "rgb(var(--brand-ink) / <alpha-value>)",
+          footer: "rgb(var(--brand-footer) / <alpha-value>)",
         },
       },
       fontFamily: {
@@ -23,7 +27,7 @@ export default {
       },
       boxShadow: {
         emergency: "0 10px 40px -8px rgba(239, 68, 68, 0.45)",
-        card: "0 10px 30px -12px rgba(69, 10, 10, 0.18)",
+        card: "var(--shadow-card)",
       },
       animation: {
         "fade-up": "fadeUp 0.6s ease-out forwards",

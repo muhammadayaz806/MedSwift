@@ -3,12 +3,44 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --brand-bg: 255 247 247;
+    --brand-surface: 255 245 245;
+    --brand-muted: 254 226 226;
+    --brand-border: 254 202 202;
+    --brand-soft: 252 165 165;
+    --brand-text: 127 29 29;
+    --brand-sub: 153 27 27;
+    --brand-accent: 185 28 28;
+    --brand-dark: 69 10 10;
+    --brand-card: 255 255 255;
+    --brand-ink: 127 29 29;
+    --brand-footer: 69 10 10;
+    --shadow-card: 0 10px 30px -12px rgba(69, 10, 10, 0.18);
+  }
+
+  .dark {
+    --brand-bg: 15 6 6;
+    --brand-surface: 28 12 12;
+    --brand-muted: 55 22 22;
+    --brand-border: 82 28 28;
+    --brand-soft: 127 29 29;
+    --brand-text: 254 226 226;
+    --brand-sub: 252 165 165;
+    --brand-accent: 248 113 113;
+    --brand-dark: 5 2 2;
+    --brand-card: 32 14 14;
+    --brand-ink: 254 242 242;
+    --brand-footer: 12 5 5;
+    --shadow-card: 0 12px 36px -10px rgba(0, 0, 0, 0.55);
+  }
+
   html {
     scroll-behavior: smooth;
   }
 
   body {
-    @apply text-brand-text;
+    @apply bg-brand-bg text-brand-text transition-colors duration-300;
   }
 }
 
@@ -30,11 +62,11 @@
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-brand-border bg-white px-6 py-3.5 text-sm sm:text-base font-bold text-brand-text transition-all duration-300 hover:border-brand-soft hover:bg-brand-surface hover:-translate-y-0.5 active:translate-y-0;
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-brand-border bg-brand-card px-6 py-3.5 text-sm sm:text-base font-bold text-brand-text transition-all duration-300 hover:border-brand-soft hover:bg-brand-surface hover:-translate-y-0.5 active:translate-y-0;
   }
 
   .feature-card {
-    @apply relative overflow-hidden rounded-3xl border border-brand-border bg-white p-6 sm:p-8 shadow-card transition-all duration-500 hover:-translate-y-2 hover:border-brand-soft hover:shadow-emergency;
+    @apply relative overflow-hidden rounded-3xl border border-brand-border bg-brand-card p-6 sm:p-8 shadow-card transition-all duration-500 hover:-translate-y-2 hover:border-brand-soft hover:shadow-emergency;
   }
 
   .feature-card::before {
@@ -44,6 +76,10 @@
 
   .feature-card:hover::before {
     @apply opacity-100;
+  }
+
+  .surface-panel {
+    @apply rounded-2xl border border-brand-border bg-brand-card shadow-sm;
   }
 }
 

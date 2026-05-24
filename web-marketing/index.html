@@ -14,8 +14,19 @@
       rel="stylesheet"
     />
     <title>MedSwift — Emergency Response, Coordinated</title>
+    <script>
+      (function () {
+        var k = "medswift-theme";
+        var s = localStorage.getItem(k);
+        var dark =
+          s === "dark" ||
+          (s !== "light" &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.classList.add("dark");
+      })();
+    </script>
   </head>
-  <body class="bg-brand-bg antialiased">
+  <body class="antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

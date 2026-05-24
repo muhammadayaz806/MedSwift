@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useInView } from "../hooks/useInView";
 import { ORG_REGISTER_URL } from "../config";
+import AppStoreBadges from "./AppStoreBadges";
 
 const citizenFeatures = [
   {
@@ -74,7 +75,7 @@ export default function Services() {
 
         <div className="mt-14 grid gap-8 lg:grid-cols-2">
           <div
-            className={`feature-card !bg-gradient-to-br !from-white !to-brand-surface ${
+            className={`feature-card !bg-gradient-to-br !from-brand-card !to-brand-surface ${
               visible ? "card-visible" : "opacity-0"
             }`}
             style={{ animationDelay: "0.08s" }}
@@ -88,9 +89,9 @@ export default function Services() {
                 The MedSwift mobile app
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-brand-sub">
-                Download on iOS or Android via Expo. Register as a citizen, tap SOS
-                when you need an ambulance, and track help in real time — the same
-                experience you see on the user home screen, designed for stress.
+                Download on iOS or Android, register as a citizen, tap SOS when you
+                need an ambulance, and track help in real time — the same experience
+                you see on the user home screen, designed for stress.
               </p>
               <ul className="mt-6 space-y-4">
                 {citizenFeatures.map((f) => (
@@ -105,16 +106,23 @@ export default function Services() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-6 rounded-xl border border-brand-border bg-brand-muted/50 px-4 py-3 text-sm text-brand-sub">
-                <strong className="text-brand-text">Get the app:</strong> run the
-                mobile project with Expo (<code className="text-xs">npx expo start</code>)
-                and scan the QR code on your device.
-              </p>
+              <div
+                id="download"
+                className="mt-6 scroll-mt-28 rounded-xl border border-brand-border bg-brand-muted/50 px-4 py-4"
+              >
+                <p className="text-sm font-semibold text-brand-text">
+                  Download MedSwift
+                </p>
+                <p className="mt-1 text-sm text-brand-sub">
+                  Available on the App Store and Google Play.
+                </p>
+                <AppStoreBadges className="mt-4" compact />
+              </div>
             </div>
           </div>
 
           <div
-            className={`feature-card !border-brand-soft/60 !bg-gradient-to-br !from-brand-text !to-brand-accent !text-white ${
+            className={`feature-card !border-brand-soft/60 !bg-gradient-to-br !from-[rgb(69,10,10)] !to-[rgb(127,29,29)] !text-white dark:!from-[rgb(40,10,10)] dark:!to-[rgb(100,20,20)] ${
               visible ? "card-visible" : "opacity-0"
             }`}
             style={{ animationDelay: "0.16s" }}

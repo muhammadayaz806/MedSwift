@@ -1,15 +1,16 @@
 import { Ambulance, Heart } from "lucide-react";
 import { NAV_LINKS, ORG_REGISTER_URL } from "../config";
+import AppStoreBadges from "./AppStoreBadges";
 
 export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-brand-border bg-brand-text text-red-100">
+    <footer className="border-t border-brand-border bg-brand-footer text-red-100">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2">
-            <a href="#home" className="inline-flex items-center gap-2.5">
+            <a href="#home" className="inline-flex gap-2.5">
               <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-emergency text-white">
                 <Ambulance className="h-5 w-5" />
               </span>
@@ -20,6 +21,7 @@ export default function Footer() {
               verified ambulance organizations — faster dispatch, live tracking,
               and accountable care from call to arrival.
             </p>
+            <AppStoreBadges className="mt-6" compact />
           </div>
 
           <div>
@@ -57,10 +59,10 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#services"
+                  href="#download"
                   className="text-red-100/90 transition hover:text-white"
                 >
-                  Citizen mobile app
+                  Download mobile app
                 </a>
               </li>
               <li>

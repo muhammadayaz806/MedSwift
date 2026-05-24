@@ -23,7 +23,7 @@ export default function About() {
   const [ref, visible] = useInView();
 
   return (
-    <section id="about" className="section-pad bg-white">
+    <section id="about" className="section-pad bg-brand-card">
       <div ref={ref} className="mx-auto max-w-7xl">
         <div
           className={`grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20 ${

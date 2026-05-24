@@ -24,7 +24,7 @@ export default function Contact() {
   }
 
   return (
-    <section id="contact" className="section-pad bg-white">
+    <section id="contact" className="section-pad bg-brand-card">
       <div ref={ref} className="mx-auto max-w-7xl">
         <div
           className={`grid gap-12 lg:grid-cols-5 lg:gap-16 ${
@@ -129,7 +129,7 @@ export default function Contact() {
                         value={form.name}
                         onChange={handleChange}
                         required
-                        className="mt-1.5 w-full rounded-xl border border-brand-border bg-white px-4 py-3 text-sm outline-none ring-brand-emergency/30 transition focus:ring-2"
+                        className="mt-1.5 w-full rounded-xl border border-brand-border bg-brand-bg px-4 py-3 text-brand-text text-sm outline-none ring-brand-emergency/30 transition focus:ring-2"
                         placeholder="Jane Doe"
                       />
                     </div>
@@ -143,7 +143,7 @@ export default function Contact() {
                         value={form.email}
                         onChange={handleChange}
                         required
-                        className="mt-1.5 w-full rounded-xl border border-brand-border bg-white px-4 py-3 text-sm outline-none ring-brand-emergency/30 transition focus:ring-2"
+                        className="mt-1.5 w-full rounded-xl border border-brand-border bg-brand-bg px-4 py-3 text-brand-text text-sm outline-none ring-brand-emergency/30 transition focus:ring-2"
                         placeholder="you@organization.org"
                       />
                     </div>
@@ -156,7 +156,7 @@ export default function Contact() {
                       name="subject"
                       value={form.subject}
                       onChange={handleChange}
-                      className="mt-1.5 w-full rounded-xl border border-brand-border bg-white px-4 py-3 text-sm outline-none ring-brand-emergency/30 transition focus:ring-2"
+                      className="mt-1.5 w-full rounded-xl border border-brand-border bg-brand-bg px-4 py-3 text-brand-text text-sm outline-none ring-brand-emergency/30 transition focus:ring-2"
                     >
                       <option value="general">General inquiry</option>
                       <option value="org">Organization / fleet partnership</option>
@@ -174,7 +174,7 @@ export default function Contact() {
                       onChange={handleChange}
                       required
                       rows={5}
-                      className="mt-1.5 w-full resize-y rounded-xl border border-brand-border bg-white px-4 py-3 text-sm outline-none ring-brand-emergency/30 transition focus:ring-2"
+                      className="mt-1.5 w-full resize-y rounded-xl border border-brand-border bg-brand-bg px-4 py-3 text-brand-text text-sm outline-none ring-brand-emergency/30 transition focus:ring-2"
                       placeholder="Tell us about your organization, region, or question..."
                     />
                   </div>

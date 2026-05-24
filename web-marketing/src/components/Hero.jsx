@@ -19,7 +19,7 @@ export default function Hero() {
       <div className="section-pad mx-auto max-w-7xl pb-8">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div className="animate-fade-up">
-            <span className="inline-flex items-center gap-2 rounded-full border border-brand-border bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-brand-accent shadow-sm">
+            <span className="surface-panel inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-brand-accent">
               <Zap className="h-3.5 w-3.5 text-brand-emergency" />
               Accident &amp; Emergency Coordination
             </span>
@@ -56,7 +56,7 @@ export default function Hero() {
               {stats.map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-2xl border border-brand-border bg-white/80 px-4 py-4 shadow-sm backdrop-blur-sm"
+                  className="surface-panel px-4 py-4 backdrop-blur-sm bg-brand-card/80"
                 >
                   <p className="text-2xl font-black text-brand-emergency">
                     {item.value}
@@ -70,16 +70,16 @@ export default function Hero() {
           </div>
 
           <div className="relative animate-fade-up lg:pl-4">
-            <div className="relative overflow-hidden rounded-[2rem] border border-brand-border bg-white shadow-card">
+            <div className="relative overflow-hidden rounded-[2rem] border border-brand-border bg-brand-card shadow-card">
               <img
                 src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1200&q=80"
                 alt="Emergency medical team responding with ambulance"
                 className="h-[280px] w-full object-cover sm:h-[360px] lg:h-[420px]"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/50 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/60 via-transparent to-transparent" />
 
               <div className="absolute bottom-4 left-4 right-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                <div className="rounded-2xl border border-brand-border/80 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm">
+                <div className="surface-panel px-4 py-3 shadow-lg backdrop-blur-sm bg-brand-card/95">
                   <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-brand-accent">
                     <MapPin className="h-3.5 w-3.5" />
                     Live dispatch
@@ -88,14 +88,14 @@ export default function Hero() {
                     Nearest verified unit assigned in seconds
                   </p>
                 </div>
-                <div className="flex items-center gap-2 rounded-2xl border border-brand-border bg-brand-text px-4 py-3 text-white shadow-lg">
-                  <Shield className="h-5 w-5 text-brand-soft" />
+                <div className="flex items-center gap-2 rounded-2xl border border-brand-border bg-brand-ink px-4 py-3 text-white shadow-lg dark:bg-brand-muted dark:text-brand-text">
+                  <Shield className="h-5 w-5 text-brand-soft dark:text-brand-emergency" />
                   <span className="text-sm font-bold">Trusted fleets only</span>
                 </div>
               </div>
             </div>
 
-            <div className="absolute -right-2 -top-4 hidden animate-float rounded-2xl border border-brand-border bg-white p-4 shadow-card sm:block lg:-right-6">
+            <div className="absolute -right-2 -top-4 hidden animate-float surface-panel p-4 shadow-card sm:block lg:-right-6">
               <p className="text-xs font-bold uppercase tracking-wider text-brand-accent">
                 Citizen app
               </p>
