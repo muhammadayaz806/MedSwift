@@ -14,7 +14,19 @@ npm run dev
 
 API base: `http://localhost:4000` (health check: `/health`).
 
-## 2. Organization dashboard (React + Vite)
+## 2. Marketing website (React + Vite)
+
+```bash
+cd web-marketing
+cp .env.example .env
+# Optional: set VITE_ORG_REGISTER_URL (defaults to http://localhost:5173/register)
+npm install
+npm run dev
+```
+
+Opens `http://localhost:5175`.
+
+## 3. Organization dashboard (React + Vite)
 
 ```bash
 cd web-org
@@ -26,7 +38,7 @@ npm run dev
 
 Opens `http://localhost:5173`.
 
-## 3. Super admin dashboard
+## 4. Super admin dashboard
 
 ```bash
 cd web-admin
@@ -37,7 +49,7 @@ npm run dev
 
 Opens `http://localhost:5174`.
 
-## 4. Mobile (Expo)
+## 5. Mobile (Expo)
 
 ```bash
 cd mobile
@@ -49,7 +61,7 @@ npx expo start
 
 Scan the QR code with Expo Go (same Wi‑Fi as your PC).
 
-## 5. Smoke test order
+## 6. Smoke test order
 
 1. Create super admin user (Firebase Auth + Firestore `users/{uid}` `role: admin`) — details in `SETUP_GUIDE.md`.
 2. Register an organization on `web-org`, approve it in `web-admin`.

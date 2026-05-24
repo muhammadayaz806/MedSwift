@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply text-brand-text;
+  }
+}
+
+@layer components {
+  .section-pad {
+    @apply px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24;
+  }
+
+  .section-title {
+    @apply text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-brand-text;
+  }
+
+  .section-sub {
+    @apply mt-4 text-base sm:text-lg text-brand-sub max-w-2xl leading-relaxed;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-emergency px-6 py-3.5 text-sm sm:text-base font-bold text-white shadow-emergency transition-all duration-300 hover:bg-brand-red hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-brand-border bg-white px-6 py-3.5 text-sm sm:text-base font-bold text-brand-text transition-all duration-300 hover:border-brand-soft hover:bg-brand-surface hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .feature-card {
+    @apply relative overflow-hidden rounded-3xl border border-brand-border bg-white p-6 sm:p-8 shadow-card transition-all duration-500 hover:-translate-y-2 hover:border-brand-soft hover:shadow-emergency;
+  }
+
+  .feature-card::before {
+    content: "";
+    @apply absolute inset-0 bg-gradient-to-br from-brand-muted/80 via-transparent to-transparent opacity-0 transition-opacity duration-500;
+  }
+
+  .feature-card:hover::before {
+    @apply opacity-100;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(1.08);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.08);
+    opacity: 0;
+  }
+}
+
+.pulse-ring::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 9999px;
+  border: 2px solid rgba(239, 68, 68, 0.35);
+  animation: pulse-ring 2.4s ease-out infinite;
+}
+
+.card-visible {
+  animation: fadeUp 0.65s ease-out forwards;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
