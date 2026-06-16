@@ -58,7 +58,7 @@ export default function About() {
               alt="Medical professionals coordinating emergency care"
               className="w-full rounded-3xl border border-brand-border object-cover shadow-card aspect-[4/3]"
             />
-            <div className="absolute -bottom-6 -left-4 max-w-[220px] rounded-2xl border border-brand-border bg-brand-bg p-4 shadow-card sm:-left-8">
+            <div className="absolute -bottom-6 -left-4 max-w-[220px] rounded-2xl border border-brand-border bg-brand-bg p-4 shadow-card">
               <p className="text-3xl font-black text-brand-emergency">1 platform</p>
               <p className="mt-1 text-sm font-medium text-brand-sub">
                 Citizens, drivers, organizations &amp; super admin — aligned.

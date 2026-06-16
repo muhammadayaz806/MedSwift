@@ -11,7 +11,7 @@ export default function Hero() {
   return (
     <section
       id="home"
-      className="relative overflow-hidden pt-28 sm:pt-32 lg:pt-36"
+      className="relative overflow-hidden pt-8 sm:pt-8 lg:pt-4"
     >
       <div className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-brand-emergency/10 blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 left-0 h-64 w-64 rounded-full bg-brand-muted/80 blur-3xl" />
