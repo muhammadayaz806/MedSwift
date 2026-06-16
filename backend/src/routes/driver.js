@@ -41,7 +41,21 @@ router.get(
     if (!driverSnap.exists) {
       return res.json({ requests: [] });
     }
-    const { orgId } = driverSnap.data();
+    const { orgId, isOnline = false } = driverSnap.data();
+
+    const activeSnap = await db
+      .collection("requests")
+      .where("driverId", "==", req.user.uid)
+      .where("status", "==", "accepted")
+      .limit(1)
+      .get();
+    const activeRequest = activeSnap.empty
+      ? null
+      : { id: activeSnap.docs[0].id, ...activeSnap.docs[0].data() };
+
+    if (!isOnline) {
+      return res.json({ requests: [], orgId, isOnline, activeRequest });
+    }
 
     const pending = await db
       .collection("requests")
@@ -55,7 +69,7 @@ router.get(
       if (!row.locked) list.push({ id: doc.id, ...row });
     }
 
-    return res.json({ requests: list, orgId });
+    return res.json({ requests: list, orgId, isOnline, activeRequest });
   }
 );
 
@@ -77,6 +91,11 @@ router.post(
       return res.status(400).json({ error: "Driver profile missing" });
     }
     const driver = driverSnap.data();
+    if (!driver.isOnline) {
+      return res
+        .status(403)
+        .json({ error: "Go online before accepting requests" });
+    }
 
     const reqRef = db.collection("requests").doc(requestId);
     let userId;

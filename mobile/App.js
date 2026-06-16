@@ -85,7 +85,12 @@ function DriverNavigator() {
       <DriverStack.Screen
         name="DriverTrip"
         component={DriverTripScreen}
-        options={{ title: "Active trip", headerStyle: { backgroundColor: "#7f1d1d" } }}
+        options={{
+          title: "Active trip",
+          headerStyle: { backgroundColor: "#7f1d1d" },
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontWeight: "800" },
+        }}
       />
     </DriverStack.Navigator>
   );
