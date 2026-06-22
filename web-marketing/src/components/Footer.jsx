@@ -8,7 +8,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-brand-border bg-brand-footer text-red-100">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-10 md:grid-cols-1 lg:grid-cols-4 lg:text-left text-center">
           <div className="lg:col-span-2">
             <a href="#home" className="inline-flex gap-2.5">
               <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-emergency text-white">
@@ -16,7 +16,7 @@ export default function Footer() {
               </span>
               <span className="text-lg font-black text-white">MedSwift</span>
             </a>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-red-200/90">
+            <p className="mt-4 text-sm leading-relaxed text-red-200/90 md:mx-auto">
               Coordinating accident and emergency response between citizens and
               verified ambulance organizations — faster dispatch, live tracking,
               and accountable care from call to arrival.

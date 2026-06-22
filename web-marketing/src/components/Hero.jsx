@@ -18,7 +18,7 @@ export default function Hero() {
 
       <div className="section-pad mx-auto max-w-7xl pb-8">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          <div className="animate-fade-up">
+          <div className="animate-fade-up lg:text-left text-center">
             <span className="surface-panel inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-brand-accent">
               <Zap className="h-3.5 w-3.5 text-brand-emergency" />
               Accident &amp; Emergency Coordination
@@ -36,7 +36,7 @@ export default function Hero() {
               that serve them.
             </p>
 
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap justify-center lg:justify-start">
               <a href="#services" className="btn-primary">
                 See how it works
                 <ArrowRight className="h-4 w-4" />

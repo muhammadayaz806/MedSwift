@@ -24,7 +24,7 @@ export default function Contact() {
   }
 
   return (
-    <section id="contact" className="section-pad bg-brand-card">
+    <section id="contact" className="section-pad bg-brand-card lg:text-left text-center">
       <div ref={ref} className="mx-auto max-w-7xl">
         <div
           className={`grid gap-12 lg:grid-cols-5 lg:gap-16 ${
@@ -36,7 +36,7 @@ export default function Contact() {
               Contact us
             </p>
             <h2 className="section-title mt-3">Let&apos;s talk about your fleet or partnership</h2>
-            <p className="section-sub">
+            <p className="section-sub md:mx-auto">
               Whether you operate ambulances, run a hospital network, or want to
               bring MedSwift to your city — we would love to hear from you. For
               organization onboarding, use the registration dashboard for the
@@ -49,7 +49,7 @@ export default function Contact() {
                   <Mail className="h-5 w-5" />
                 </span>
                 <div>
-                  <p className="font-bold text-brand-text">Email</p>
+                  <p className="font-bold text-brand-text text-left">Email</p>
                   <a
                     href="mailto:hello@medswift.app"
                     className="text-sm text-brand-sub hover:text-brand-emergency"
@@ -63,8 +63,8 @@ export default function Contact() {
                   <Phone className="h-5 w-5" />
                 </span>
                 <div>
-                  <p className="font-bold text-brand-text">Partnerships</p>
-                  <p className="text-sm text-brand-sub">Available on request for pilot regions</p>
+                  <p className="font-bold text-brand-text text-left">Partnerships</p>
+                  <p className="text-sm text-brand-sub text-left">Available on request for pilot regions</p>
                 </div>
               </li>
               <li className="flex items-start gap-4">
@@ -72,8 +72,8 @@ export default function Contact() {
                   <MapPin className="h-5 w-5" />
                 </span>
                 <div>
-                  <p className="font-bold text-brand-text">Coverage</p>
-                  <p className="text-sm text-brand-sub">
+                  <p className="font-bold text-brand-text text-left">Coverage</p>
+                  <p className="text-sm text-brand-sub text-left">
                     Expanding with verified ambulance organizations worldwide
                   </p>
                 </div>

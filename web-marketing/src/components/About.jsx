@@ -30,14 +30,14 @@ export default function About() {
             visible ? "card-visible" : "opacity-0"
           }`}
         >
-          <div>
+          <div className="lg:text-left text-center">
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-brand-accent">
               About MedSwift
             </p>
             <h2 className="section-title mt-3">
               Modern emergency logistics for real communities
             </h2>
-            <p className="section-sub">
+            <p className="section-sub md:mx-auto">
               MedSwift is an accident and emergency coordination platform. When
               someone needs an ambulance, they should not navigate phone trees or
               wonder whether help is coming. Our mobile app puts dispatch at their

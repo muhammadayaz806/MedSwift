@@ -35,7 +35,7 @@ function PlayIcon() {
 
 export default function AppStoreBadges({ className = "", compact = false }) {
   return (
-    <div className={`flex flex-wrap items-center gap-3 ${className}`}>
+    <div className={`flex flex-wrap items-center gap-3 justify-center lg:justify-start ${className}`}>
       <StoreBadge href={APP_STORE_URL} label="Download MedSwift on the App Store">
         <AppleIcon />
         <span className="text-left leading-tight">
