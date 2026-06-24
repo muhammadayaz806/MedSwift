@@ -8,6 +8,7 @@ import driverRoutes from "./routes/driver.js";
 import orgRoutes from "./routes/org.js";
 import adminRoutes from "./routes/admin.js";
 import authProfileRoutes from "./routes/authProfile.js";
+import authEmailRoutes from "./routes/authEmail.js";
 
 initFirebase();
 
@@ -32,6 +33,7 @@ app.use(
 app.get("/health", (_req, res) => res.json({ ok: true, service: "medswift-api" }));
 
 app.use("/auth", authProfileRoutes);
+app.use("/auth", authEmailRoutes);
 app.use("/emergency", emergencyRoutes);
 app.use("/driver", driverRoutes);
 app.use("/org", orgRoutes);

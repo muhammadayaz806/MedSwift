@@ -146,7 +146,7 @@ export function AuthProvider({ children }) {
     await signInWithEmailAndPassword(auth, email, password);
   }, []);
 
-  const registerUser = useCallback(async ({ name, email, password }) => {
+  const registerUser = useCallback(async ({ name, email, password, emailVerificationToken }) => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const token = await cred.user.getIdToken();
     await api(
@@ -157,6 +157,7 @@ export function AuthProvider({ children }) {
           name,
           role: "user",
           email,
+          emailVerificationToken,
         }),
       },
       token

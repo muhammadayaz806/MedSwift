@@ -68,6 +68,11 @@ export default function Login() {
             Sign in
           </button>
         </form>
+        <p className="text-center text-sm text-slate-500 mt-4">
+          <Link to="/forgot-password" className="text-primary font-medium hover:underline">
+            Forgot password?
+          </Link>
+        </p>
         <p className="text-center text-sm text-slate-500 mt-6">
           New organization?{" "}
           <Link to="/register" className="text-primary font-medium hover:underline">

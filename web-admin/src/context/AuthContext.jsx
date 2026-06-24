@@ -6,7 +6,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { api } from "../lib/api";
 
@@ -49,9 +49,13 @@ export function AuthProvider({ children }) {
     return u.getIdToken();
   }, []);
 
+  const sendPasswordReset = useCallback(async (email) => {
+    await sendPasswordResetEmail(auth, email);
+  }, []);
+
   const value = useMemo(
-    () => ({ user, profile, loading, login, logout, getToken }),
-    [user, profile, loading, login, logout, getToken]
+    () => ({ user, profile, loading, login, logout, getToken, sendPasswordReset }),
+    [user, profile, loading, login, logout, getToken, sendPasswordReset]
   );
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;

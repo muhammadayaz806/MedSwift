@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import Shell from "./components/Shell";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 import Overview from "./pages/Overview";
 import Drivers from "./pages/Drivers";
 import Ambulances from "./pages/Ambulances";
@@ -40,6 +41,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/*" element={<PrivateShell />} />
       </Routes>
     </AuthProvider>

@@ -8,7 +8,9 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import { apiBase } from "./src/lib/api";
 import LoginScreen from "./src/screens/LoginScreen";
+import RoleSelectionScreen from "./src/screens/RoleSelectionScreen";
 import RegisterScreen from "./src/screens/RegisterScreen";
+import ForgotPasswordScreen from "./src/screens/ForgotPasswordScreen";
 import UserHomeScreen from "./src/screens/UserHomeScreen";
 import TrackScreen from "./src/screens/TrackScreen";
 import SupportScreen from "./src/screens/SupportScreen";
@@ -145,8 +147,10 @@ function RootNavigator() {
   if (!user) {
     return (
       <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+        <AuthStack.Screen name="RoleSelection" component={RoleSelectionScreen} />
         <AuthStack.Screen name="Login" component={LoginScreen} />
         <AuthStack.Screen name="Register" component={RegisterScreen} />
+        <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
       </AuthStack.Navigator>
     );
   }

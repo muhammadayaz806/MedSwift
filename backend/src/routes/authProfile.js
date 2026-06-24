@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { getDb } from "../config/firebase.js";
 import { verifyFirebaseToken } from "../middleware/auth.js";
+import { consumeVerificationToken } from "../services/otp.js";
 
 const router = Router();
 
 /** Register profile after Firebase Auth signup (all roles use this once). */
 router.post("/profile/bootstrap", verifyFirebaseToken, async (req, res) => {
-  const { name, role, organizationName, organizationEmail } = req.body || {};
+  const { name, role, organizationName, organizationEmail, emailVerificationToken } =
+    req.body || {};
   if (!name || !role) {
     return res.status(400).json({ error: "name and role required" });
   }
@@ -27,6 +29,17 @@ router.post("/profile/bootstrap", verifyFirebaseToken, async (req, res) => {
   }
 
   if (role === "user") {
+    if (!emailVerificationToken) {
+      return res.status(400).json({
+        error: "Email verification required. Complete OTP verification before registering.",
+      });
+    }
+    try {
+      await consumeVerificationToken(emailVerificationToken, email, "registration");
+    } catch (e) {
+      return res.status(400).json({ error: e.message || "Invalid email verification" });
+    }
+
     await ref.set({
       name,
       email,

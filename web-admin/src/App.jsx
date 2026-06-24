@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Shell from "./components/Shell";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import Organizations from "./pages/Organizations";
 import UsersPage from "./pages/UsersPage";
 import DriversPage from "./pages/DriversPage";
@@ -38,6 +39,7 @@ export default function App() {
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/*" element={<PrivateShell />} />
       </Routes>
     </AuthProvider>

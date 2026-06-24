@@ -11,6 +11,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { api } from "../lib/api";
@@ -84,6 +85,10 @@ export function AuthProvider({ children }) {
     return u.getIdToken();
   }, []);
 
+  const sendPasswordReset = useCallback(async (email) => {
+    await sendPasswordResetEmail(auth, email);
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -94,8 +99,9 @@ export function AuthProvider({ children }) {
       registerOrg,
       refreshProfile,
       getToken,
+      sendPasswordReset,
     }),
-    [user, profile, loading, login, logout, registerOrg, refreshProfile, getToken]
+    [user, profile, loading, login, logout, registerOrg, refreshProfile, getToken, sendPasswordReset]
   );
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;

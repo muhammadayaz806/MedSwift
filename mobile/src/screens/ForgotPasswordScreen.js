@@ -12,16 +12,14 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 
-export default function RegisterScreen({ navigation }) {
-  const { registerUser } = useAuth();
+export default function ForgotPasswordScreen({ navigation }) {
   const [step, setStep] = useState(1);
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [password, setPassword] = useState("");
-  const [verificationToken, setVerificationToken] = useState("");
-  const [err, setErr] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [resetToken, setResetToken] = useState("");
   const [msg, setMsg] = useState("");
+  const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function sendCode() {
@@ -31,7 +29,7 @@ export default function RegisterScreen({ navigation }) {
     try {
       await api("/auth/email/otp/send", {
         method: "POST",
-        body: JSON.stringify({ email: email.trim(), purpose: "registration" }),
+        body: JSON.stringify({ email: email.trim(), purpose: "password_reset" }),
       });
       setMsg("Verification code sent. Check your email (or backend console in dev).");
       setStep(2);
@@ -42,7 +40,7 @@ export default function RegisterScreen({ navigation }) {
     }
   }
 
-  async function verifyAndContinue() {
+  async function verifyCode() {
     setErr("");
     setMsg("");
     setBusy(true);
@@ -52,11 +50,11 @@ export default function RegisterScreen({ navigation }) {
         body: JSON.stringify({
           email: email.trim(),
           code: code.trim(),
-          purpose: "registration",
+          purpose: "password_reset",
         }),
       });
-      setVerificationToken(res.token);
-      setMsg("Email verified. Complete your profile.");
+      setResetToken(res.token);
+      setMsg("Code verified. Choose a new password.");
       setStep(3);
     } catch (e) {
       setErr(e.message || "Verification failed");
@@ -65,18 +63,23 @@ export default function RegisterScreen({ navigation }) {
     }
   }
 
-  async function onSubmit() {
+  async function resetPassword() {
     setErr("");
+    setMsg("");
     setBusy(true);
     try {
-      await registerUser({
-        name: name.trim(),
-        email: email.trim(),
-        password,
-        emailVerificationToken: verificationToken,
+      await api("/auth/email/password/reset", {
+        method: "POST",
+        body: JSON.stringify({
+          email: email.trim(),
+          token: resetToken,
+          newPassword,
+        }),
       });
+      setMsg("Password updated. You can sign in now.");
+      setTimeout(() => navigation.navigate("Login", { role: "user" }), 1200);
     } catch (e) {
-      setErr(e.message || "Registration failed");
+      setErr(e.message || "Reset failed");
     } finally {
       setBusy(false);
     }
@@ -91,10 +94,9 @@ export default function RegisterScreen({ navigation }) {
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.title}>Create citizen account</Text>
+        <Text style={styles.title}>Reset password</Text>
         <Text style={styles.sub}>
-          Drivers receive credentials from their organization — they should not
-          use this form.
+          Enter the email for your citizen account. We will send a 6-digit code.
         </Text>
 
         {step >= 1 && (
@@ -112,7 +114,7 @@ export default function RegisterScreen({ navigation }) {
 
         {step >= 2 && (
           <TextInput
-            placeholder="6-digit verification code"
+            placeholder="6-digit code"
             placeholderTextColor="#94a3b8"
             keyboardType="number-pad"
             maxLength={6}
@@ -124,23 +126,14 @@ export default function RegisterScreen({ navigation }) {
         )}
 
         {step >= 3 && (
-          <>
-            <TextInput
-              placeholder="Full name"
-              placeholderTextColor="#94a3b8"
-              style={styles.input}
-              value={name}
-              onChangeText={setName}
-            />
-            <TextInput
-              placeholder="Password (min 6)"
-              placeholderTextColor="#94a3b8"
-              secureTextEntry
-              style={styles.input}
-              value={password}
-              onChangeText={setPassword}
-            />
-          </>
+          <TextInput
+            placeholder="New password (min 6)"
+            placeholderTextColor="#94a3b8"
+            secureTextEntry
+            style={styles.input}
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
         )}
 
         {!!err && <Text style={styles.err}>{err}</Text>}
@@ -152,30 +145,30 @@ export default function RegisterScreen({ navigation }) {
             onPress={sendCode}
             disabled={busy || !email.trim()}
           >
-            <Text style={styles.primaryLbl}>Send verification code</Text>
+            <Text style={styles.primaryLbl}>Send code</Text>
           </Pressable>
         )}
         {step === 2 && (
           <Pressable
             style={[styles.primaryBtn, busy && styles.btnDisabled]}
-            onPress={verifyAndContinue}
+            onPress={verifyCode}
             disabled={busy || code.length < 6}
           >
-            <Text style={styles.primaryLbl}>Verify email</Text>
+            <Text style={styles.primaryLbl}>Verify code</Text>
           </Pressable>
         )}
         {step === 3 && (
           <Pressable
             style={[styles.primaryBtn, busy && styles.btnDisabled]}
-            onPress={onSubmit}
-            disabled={busy || !name.trim() || password.length < 6}
+            onPress={resetPassword}
+            disabled={busy || newPassword.length < 6}
           >
-            <Text style={styles.primaryLbl}>Register</Text>
+            <Text style={styles.primaryLbl}>Update password</Text>
           </Pressable>
         )}
 
         <Pressable onPress={() => navigation.goBack()}>
-          <Text style={styles.link}>Back to login</Text>
+          <Text style={styles.link}>Back to sign in</Text>
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -202,7 +195,7 @@ const styles = StyleSheet.create({
   msg: { color: "#86efac" },
   primaryBtn: {
     marginTop: 8,
-    backgroundColor: "#1e4db7",
+    backgroundColor: "#dc2626",
     paddingVertical: 16,
     borderRadius: 14,
     alignItems: "center",

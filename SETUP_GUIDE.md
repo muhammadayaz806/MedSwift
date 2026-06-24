@@ -62,6 +62,11 @@ Do **not** commit this file.
 | `GOOGLE_APPLICATION_CREDENTIALS` | Path to service account JSON |
 | `FIREBASE_DATABASE_URL` | Required for live locations |
 | `CORS_ORIGINS` | Comma-separated allowed web origins |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | Email OTP for mobile (see `AUTH_EMAIL_SETUP.md`) |
+| `EMAIL_FROM` | Sender shown in OTP emails |
+| `EMAIL_MOCK` | `true` = log OTP to console in dev instead of sending |
+
+For password reset, OTP registration, and email provider setup, see **`AUTH_EMAIL_SETUP.md`**.
 
 Restart the API after changes.
 
