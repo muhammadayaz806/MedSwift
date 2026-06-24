@@ -1,11 +1,40 @@
 import Constants from "expo-constants";
 
+const API_PORT = 4000;
 const extra = Constants.expoConfig?.extra || {};
-const envApiUrl = process.env.EXPO_PUBLIC_API_URL;
-const base = (envApiUrl || extra.apiUrl || "http://localhost:4000").replace(
-  /\/$/,
-  ""
-);
+
+/** Same host Expo uses for Metro (QR code IP) — works on hotspot, LAN, etc. */
+function getMetroHost() {
+  const raw =
+    Constants.expoConfig?.hostUri ??
+    Constants.expoGoConfig?.debuggerHost ??
+    Constants.manifest?.debuggerHost ??
+    Constants.manifest2?.extra?.expoClient?.hostUri;
+  if (!raw) return null;
+  const host = raw.split(":")[0]?.trim();
+  return host || null;
+}
+
+function resolveApiBase() {
+  const envUrl = (process.env.EXPO_PUBLIC_API_URL || "").replace(/\/$/, "");
+  const configured = (envUrl || extra.apiUrl || "").replace(/\/$/, "");
+  const forceEnv = process.env.EXPO_PUBLIC_API_URL_FORCE === "1";
+
+  if (__DEV__ && !forceEnv) {
+    const metroHost = getMetroHost();
+    if (metroHost && metroHost !== "localhost" && metroHost !== "127.0.0.1") {
+      return `http://${metroHost}:${API_PORT}`;
+    }
+    if (configured && !configured.includes("YOUR_MACHINE")) {
+      return configured;
+    }
+    return `http://localhost:${API_PORT}`;
+  }
+
+  return configured || `http://localhost:${API_PORT}`;
+}
+
+export const apiBase = resolveApiBase();
 
 export async function api(path, options = {}, idToken) {
   const headers = {
@@ -13,7 +42,7 @@ export async function api(path, options = {}, idToken) {
     ...(options.headers || {}),
   };
   if (idToken) headers.Authorization = `Bearer ${idToken}`;
-  const url = `${base}${path}`;
+  const url = `${apiBase}${path}`;
   let res;
   try {
     res = await fetch(url, { ...options, headers });

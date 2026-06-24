@@ -6,6 +6,7 @@ import { Text, View, ActivityIndicator, StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
+import { apiBase } from "./src/lib/api";
 import LoginScreen from "./src/screens/LoginScreen";
 import RegisterScreen from "./src/screens/RegisterScreen";
 import UserHomeScreen from "./src/screens/UserHomeScreen";
@@ -119,7 +120,7 @@ function MissingProfile() {
       <Text style={styles.title}>Finish onboarding</Text>
       <Text style={styles.body}>
         {profileError
-          ? `Could not load profile (${profileError}). Check that the API is running and EXPO_PUBLIC_API_URL reaches your machine (use your PC LAN IP, not localhost, on a physical phone).`
+          ? `Could not load profile (${profileError}). Ensure the backend is running on ${apiBase} (same machine as Expo). On a physical device, connect via the same hotspot/Wi‑Fi as your PC.`
           : `No profile exists for ${user?.email}. Drivers must be created by their organization; citizens should register via the mobile form.`}
       </Text>
       <Text style={styles.link} onPress={() => logout()}>
