@@ -111,14 +111,19 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
-      setUser(u);
       if (!u) {
+        // Batch: clear everything at once so no intermediate render shows MissingProfile
+        setUser(null);
         setProfile(null);
         setProfileError(null);
         setLoading(false);
         return;
       }
+      // Keep loading=true while we fetch the profile so RootNavigator
+      // stays on the spinner and never flashes <MissingProfile>.
       const me = await refreshProfile();
+      // Now reveal the authenticated state all at once
+      setUser(u);
       if (me) {
         const pushToken = await registerPushTokenAsync();
         if (pushToken) {
