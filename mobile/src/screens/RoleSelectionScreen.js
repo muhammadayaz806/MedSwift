@@ -16,28 +16,28 @@ export default function RoleSelectionScreen({ navigation }) {
         style={styles.card}
         onPress={() => navigation.navigate("Login", { role: "user" })}
       >
-        <MaterialCommunityIcons name="account-heart" size={36} color="#93c5fd" />
+        <MaterialCommunityIcons name="account-heart" size={36} color="#ef4444" />
         <View style={styles.cardText}>
           <Text style={styles.cardTitle}>Citizen</Text>
           <Text style={styles.cardSub}>
             Request emergency help and track ambulance arrival
           </Text>
         </View>
-        <MaterialCommunityIcons name="chevron-right" size={28} color="#64748b" />
+        <MaterialCommunityIcons name="chevron-right" size={28} color="#fca5a5" />
       </Pressable>
 
       <Pressable
         style={styles.card}
         onPress={() => navigation.navigate("Login", { role: "driver" })}
       >
-        <MaterialCommunityIcons name="ambulance" size={36} color="#fca5a5" />
+        <MaterialCommunityIcons name="ambulance" size={36} color="#ef4444" />
         <View style={styles.cardText}>
           <Text style={styles.cardTitle}>Ambulance driver</Text>
           <Text style={styles.cardSub}>
             Accept trips and share live location with dispatch
           </Text>
         </View>
-        <MaterialCommunityIcons name="chevron-right" size={28} color="#64748b" />
+        <MaterialCommunityIcons name="chevron-right" size={28} color="#fca5a5" />
       </Pressable>
     </View>
   );
@@ -46,31 +46,36 @@ export default function RoleSelectionScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#fff7f7",
     padding: 24,
     paddingTop: 72,
     gap: 16,
   },
   brand: {
-    color: "#93c5fd",
+    color: "#dc2626",
     fontSize: 14,
     fontWeight: "700",
     letterSpacing: 1,
     textTransform: "uppercase",
   },
-  title: { color: "#fff", fontSize: 28, fontWeight: "800", marginTop: 8 },
-  sub: { color: "#94a3b8", marginBottom: 8, lineHeight: 22 },
+  title: { color: "#7f1d1d", fontSize: 28, fontWeight: "900", marginTop: 8 },
+  sub: { color: "#991b1b", marginBottom: 8, lineHeight: 22 },
   card: {
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#fecaca",
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
   cardText: { flex: 1, gap: 4 },
-  cardTitle: { color: "#fff", fontSize: 18, fontWeight: "700" },
-  cardSub: { color: "#94a3b8", fontSize: 14, lineHeight: 20 },
+  cardTitle: { color: "#7f1d1d", fontSize: 18, fontWeight: "800" },
+  cardSub: { color: "#991b1b", fontSize: 14, lineHeight: 20 },
 });

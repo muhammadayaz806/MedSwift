@@ -102,7 +102,7 @@ export default function ForgotPasswordScreen({ navigation }) {
         {step >= 1 && (
           <TextInput
             placeholder="Email"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor="#fca5a5"
             autoCapitalize="none"
             keyboardType="email-address"
             style={[styles.input, step > 1 && styles.inputDisabled]}
@@ -115,7 +115,7 @@ export default function ForgotPasswordScreen({ navigation }) {
         {step >= 2 && (
           <TextInput
             placeholder="6-digit code"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor="#fca5a5"
             keyboardType="number-pad"
             maxLength={6}
             style={[styles.input, step > 2 && styles.inputDisabled]}
@@ -128,7 +128,7 @@ export default function ForgotPasswordScreen({ navigation }) {
         {step >= 3 && (
           <TextInput
             placeholder="New password (min 6)"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor="#fca5a5"
             secureTextEntry
             style={styles.input}
             value={newPassword}
@@ -176,31 +176,41 @@ export default function ForgotPasswordScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: "#0f172a" },
+  flex: { flex: 1, backgroundColor: "#fff7f7" },
   scroll: { padding: 24, paddingTop: 56, gap: 12 },
-  title: { color: "#fff", fontSize: 24, fontWeight: "800" },
-  sub: { color: "#94a3b8", marginBottom: 8, lineHeight: 22 },
+  title: { color: "#7f1d1d", fontSize: 24, fontWeight: "900" },
+  sub: { color: "#991b1b", marginBottom: 8, lineHeight: 22 },
   input: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#fff",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    color: "#fff",
+    color: "#7f1d1d",
     fontSize: 16,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#fecaca",
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  inputDisabled: { opacity: 0.6 },
-  err: { color: "#fecaca" },
-  msg: { color: "#86efac" },
+  inputDisabled: { opacity: 0.5 },
+  err: { color: "#b91c1c", fontWeight: "600" },
+  msg: { color: "#15803d", fontWeight: "600" },
   primaryBtn: {
     marginTop: 8,
-    backgroundColor: "#dc2626",
+    backgroundColor: "#ef4444",
     paddingVertical: 16,
     borderRadius: 14,
     alignItems: "center",
+    shadowColor: "#ef4444",
+    shadowOpacity: 0.4,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
   btnDisabled: { opacity: 0.6 },
-  primaryLbl: { color: "#fff", fontWeight: "700", fontSize: 16 },
-  link: { color: "#93c5fd", textAlign: "center", marginTop: 16 },
+  primaryLbl: { color: "#fff", fontWeight: "900", fontSize: 16 },
+  link: { color: "#dc2626", textAlign: "center", marginTop: 16, fontWeight: "700" },
 });

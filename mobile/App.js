@@ -174,7 +174,7 @@ export default function App() {
   return (
     <AuthProvider>
       <NavigationContainer theme={navTheme}>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <RootNavigator />
       </NavigationContainer>
     </AuthProvider>
@@ -184,23 +184,23 @@ export default function App() {
 const styles = StyleSheet.create({
   center: {
     flex: 1,
-    backgroundColor: "#0b1224",
+    backgroundColor: "#fff7f7",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 28,
     gap: 12,
   },
   title: {
-    color: "#fff",
+    color: "#7f1d1d",
     fontSize: 22,
-    fontWeight: "800",
+    fontWeight: "900",
     textAlign: "center",
   },
-  body: { color: "#94a3b8", textAlign: "center", lineHeight: 22 },
+  body: { color: "#991b1b", textAlign: "center", lineHeight: 22 },
   link: {
     marginTop: 12,
-    color: "#93c5fd",
+    color: "#dc2626",
     fontWeight: "700",
   },
-  muted: { color: "#64748b", marginTop: 12 },
+  muted: { color: "#b91c1c", marginTop: 12 },
 });
