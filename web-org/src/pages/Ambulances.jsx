@@ -67,20 +67,20 @@ export default function Ambulances() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Ambulances</h1>
-        <p className="text-slate-600 text-sm mt-1">
+        <h1 className="text-2xl font-bold text-brand-text">Ambulances</h1>
+        <p className="text-brand-sub text-sm mt-1">
           Register fleet units and assign drivers.
         </p>
       </div>
 
       <form
         onSubmit={addAmbulance}
-        className="rounded-2xl bg-white border border-slate-200 p-6 flex flex-col sm:flex-row gap-4 items-end"
+        className="rounded-2xl bg-brand-card border border-brand-border p-6 flex flex-col sm:flex-row gap-4 items-end"
       >
         <div className="flex-1 w-full">
-          <label className="text-sm font-medium text-slate-700">Plate / ID</label>
+          <label className="text-sm font-medium text-brand-text">Plate / ID</label>
           <input
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-brand-border bg-brand-card px-3 py-2 text-sm text-brand-text"
             value={plate}
             onChange={(e) => setPlate(e.target.value)}
             placeholder="e.g. KH-227"
@@ -88,11 +88,11 @@ export default function Ambulances() {
           />
         </div>
         <div className="flex-1 w-full">
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-brand-text">
             Assign driver (optional)
           </label>
           <select
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white"
+            className="mt-1 w-full rounded-lg border border-brand-border px-3 py-2 text-sm bg-brand-card text-brand-text"
             value={driverId}
             onChange={(e) => setDriverId(e.target.value)}
           >
@@ -106,20 +106,20 @@ export default function Ambulances() {
         </div>
         <button
           type="submit"
-          className="w-full sm:w-auto rounded-xl bg-primary text-white font-semibold px-6 py-2.5"
+          className="w-full sm:w-auto rounded-xl bg-brand-emergency text-white font-semibold px-6 py-2.5 hover:bg-brand-red transition"
         >
           Add ambulance
         </button>
       </form>
       {err && (
-        <div className="text-sm text-emergency bg-red-50 rounded-lg px-3 py-2">
+        <div className="text-sm text-brand-red bg-brand-muted rounded-lg px-3 py-2">
           {err}
         </div>
       )}
 
-      <div className="rounded-2xl bg-white border border-slate-200 overflow-x-auto">
+      <div className="rounded-2xl bg-brand-card border border-brand-border overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-50 text-slate-600 text-left">
+          <thead className="bg-brand-surface text-brand-sub text-left">
             <tr>
               <th className="px-4 py-3">Ambulance</th>
               <th className="px-4 py-3">Assigned driver</th>
@@ -128,12 +128,12 @@ export default function Ambulances() {
           </thead>
           <tbody>
             {ambulances.map((a) => (
-              <tr key={a.id} className="border-t border-slate-100">
+              <tr key={a.id} className="border-t border-brand-muted">
                 <td className="px-4 py-3 font-semibold">{a.plate}</td>
                 <td className="px-4 py-3 font-mono text-xs">{a.driverId || "—"}</td>
                 <td className="px-4 py-3 text-right">
                   <select
-                    className="rounded-lg border border-slate-300 px-2 py-1 text-xs max-w-[200px]"
+                    className="rounded-lg border border-brand-border bg-brand-card px-2 py-1 text-xs max-w-[200px] text-brand-text"
                     value={a.driverId || ""}
                     onChange={(e) => assign(a.id, e.target.value)}
                   >
@@ -149,7 +149,7 @@ export default function Ambulances() {
             ))}
             {!ambulances.length && (
               <tr>
-                <td colSpan={3} className="px-4 py-10 text-center text-slate-500">
+                <td colSpan={3} className="px-4 py-10 text-center text-brand-sub">
                   No ambulances registered.
                 </td>
               </tr>

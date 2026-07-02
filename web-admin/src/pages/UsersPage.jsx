@@ -42,19 +42,19 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Users</h1>
-        <p className="text-slate-400 text-sm mt-1">
+        <h1 className="text-2xl font-bold text-brand-ink">Users</h1>
+        <p className="text-brand-sub text-sm mt-1">
           Monitor citizen accounts and enforcement status.
         </p>
       </div>
       {err && (
-        <div className="text-sm text-red-300 bg-red-950/40 border border-red-900 rounded-lg px-3 py-2">
+        <div className="text-sm text-brand-accent bg-brand-muted/40 border border-brand-border rounded-lg px-3 py-2">
           {err}
         </div>
       )}
-      <div className="rounded-2xl bg-slate-900 border border-slate-800 overflow-x-auto">
+      <div className="rounded-2xl bg-brand-card border border-brand-border overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-950 text-left text-slate-400">
+          <thead className="bg-brand-bg text-left text-brand-sub">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3 hidden md:table-cell">Email</th>
@@ -64,11 +64,11 @@ export default function UsersPage() {
               <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="text-slate-200">
+          <tbody className="text-brand-text">
             {users.map((u) => (
-              <tr key={u.id} className="border-t border-slate-800">
+              <tr key={u.id} className="border-t border-brand-border">
                 <td className="px-4 py-3">{u.name}</td>
-                <td className="px-4 py-3 hidden md:table-cell text-slate-400">
+                <td className="px-4 py-3 hidden md:table-cell text-brand-sub">
                   {u.email}
                 </td>
                 <td className="px-4 py-3 capitalize">{u.role}</td>
@@ -89,7 +89,7 @@ export default function UsersPage() {
             ))}
             {!users.length && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-slate-500">
+                <td colSpan={6} className="px-4 py-10 text-center text-brand-sub">
                   No users.
                 </td>
               </tr>

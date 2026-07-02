@@ -76,40 +76,40 @@ export default function Drivers() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Drivers</h1>
-        <p className="text-slate-600 text-sm mt-1">
+        <h1 className="text-2xl font-bold text-brand-text">Drivers</h1>
+        <p className="text-brand-sub text-sm mt-1">
           Create driver credentials for your ambulance crews.
         </p>
       </div>
 
       <form
         onSubmit={addDriver}
-        className="rounded-2xl bg-white border border-slate-200 p-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        className="rounded-2xl bg-brand-card border border-brand-border p-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <div className="lg:col-span-2">
-          <label className="text-sm font-medium text-slate-700">Name</label>
+          <label className="text-sm font-medium text-brand-text">Name</label>
           <input
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-brand-border bg-brand-card px-3 py-2 text-sm text-brand-text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-slate-700">Email</label>
+          <label className="text-sm font-medium text-brand-text">Email</label>
           <input
             type="email"
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-brand-border bg-brand-card px-3 py-2 text-sm text-brand-text"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-slate-700">Password</label>
+          <label className="text-sm font-medium text-brand-text">Password</label>
           <input
             type="password"
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-brand-border bg-brand-card px-3 py-2 text-sm text-brand-text"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -119,18 +119,18 @@ export default function Drivers() {
         <div className="sm:col-span-2 lg:col-span-4 flex flex-wrap gap-3 items-center">
           <button
             type="submit"
-            className="rounded-xl bg-primary text-white font-semibold px-6 py-2.5"
+            className="rounded-xl bg-brand-emergency text-white font-semibold px-6 py-2.5 hover:bg-brand-red transition"
           >
             Add driver
           </button>
           {msg && <span className="text-sm text-green-700">{msg}</span>}
-          {err && <span className="text-sm text-emergency">{err}</span>}
+          {err && <span className="text-sm text-brand-red">{err}</span>}
         </div>
       </form>
 
-      <div className="rounded-2xl bg-white border border-slate-200 overflow-x-auto">
+      <div className="rounded-2xl bg-brand-card border border-brand-border overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-50 text-slate-600 text-left">
+          <thead className="bg-brand-surface text-brand-sub text-left">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Email</th>
@@ -141,7 +141,7 @@ export default function Drivers() {
           </thead>
           <tbody>
             {drivers.map((d) => (
-              <tr key={d.id} className="border-t border-slate-100">
+              <tr key={d.id} className="border-t border-brand-muted">
                 <td className="px-4 py-3">{d.name}</td>
                 <td className="px-4 py-3 break-all">{d.email}</td>
                 <td className="px-4 py-3 capitalize">{d.status}</td>
@@ -166,7 +166,7 @@ export default function Drivers() {
                   )}
                   <button
                     type="button"
-                    className="text-emergency hover:underline"
+                    className="text-brand-red hover:underline"
                     onClick={() => remove(d.id)}
                   >
                     Delete
@@ -176,7 +176,7 @@ export default function Drivers() {
             ))}
             {!drivers.length && (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-slate-500">
+                <td colSpan={5} className="px-4 py-10 text-center text-brand-sub">
                   No drivers yet.
                 </td>
               </tr>

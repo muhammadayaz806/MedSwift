@@ -79,8 +79,8 @@ export default function Overview() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Operations overview</h1>
-        <p className="text-slate-600 text-sm mt-1">
+        <h1 className="text-2xl font-bold text-brand-text">Operations overview</h1>
+        <p className="text-brand-sub text-sm mt-1">
           Live emergencies and ambulance positions for your organization.
         </p>
       </div>
@@ -93,27 +93,27 @@ export default function Overview() {
       )}
 
       {err && (
-        <div className="rounded-xl bg-red-50 text-emergency px-4 py-3 text-sm">{err}</div>
+        <div className="rounded-xl bg-brand-muted text-brand-red px-4 py-3 text-sm">{err}</div>
       )}
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-xl bg-white shadow-sm border border-slate-200 p-4">
-          <p className="text-xs uppercase text-slate-500 font-semibold">
+        <div className="rounded-xl bg-brand-card shadow-sm border border-brand-border p-4">
+          <p className="text-xs uppercase text-brand-sub font-semibold">
             Pending dispatch
           </p>
-          <p className="text-3xl font-bold text-emergency mt-1">{pending.length}</p>
+          <p className="text-3xl font-bold text-brand-red mt-1">{pending.length}</p>
         </div>
-        <div className="rounded-xl bg-white shadow-sm border border-slate-200 p-4">
-          <p className="text-xs uppercase text-slate-500 font-semibold">
+        <div className="rounded-xl bg-brand-card shadow-sm border border-brand-border p-4">
+          <p className="text-xs uppercase text-brand-sub font-semibold">
             Active trips
           </p>
-          <p className="text-3xl font-bold text-primary mt-1">{active.length}</p>
+          <p className="text-3xl font-bold text-brand-accent mt-1">{active.length}</p>
         </div>
-        <div className="rounded-xl bg-white shadow-sm border border-slate-200 p-4">
-          <p className="text-xs uppercase text-slate-500 font-semibold">
+        <div className="rounded-xl bg-brand-card shadow-sm border border-brand-border p-4">
+          <p className="text-xs uppercase text-brand-sub font-semibold">
             Online drivers
           </p>
-          <p className="text-3xl font-bold text-slate-900 mt-1">
+          <p className="text-3xl font-bold text-brand-text mt-1">
             {drivers.filter((d) => d.isOnline).length}
           </p>
         </div>
@@ -126,7 +126,7 @@ export default function Overview() {
         </div>
       ) : (
         <LoadScript googleMapsApiKey={apiKey}>
-          <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+          <div className="rounded-2xl overflow-hidden border border-brand-border shadow-sm bg-brand-card">
             <GoogleMap
               mapContainerStyle={mapContainerStyle}
               center={center}
@@ -163,9 +163,9 @@ export default function Overview() {
         </LoadScript>
       )}
 
-      <div className="rounded-xl bg-white border border-slate-200 overflow-hidden">
+      <div className="rounded-xl bg-brand-card border border-brand-border overflow-hidden">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-50 text-left text-slate-600">
+          <thead className="bg-brand-surface text-left text-brand-sub">
             <tr>
               <th className="px-4 py-3">Request</th>
               <th className="px-4 py-3">Status</th>
@@ -174,7 +174,7 @@ export default function Overview() {
           </thead>
           <tbody>
             {emergencies.slice(0, 20).map((row) => (
-              <tr key={row.id} className="border-t border-slate-100">
+              <tr key={row.id} className="border-t border-brand-muted">
                 <td className="px-4 py-2 font-mono text-xs">{row.id}</td>
                 <td className="px-4 py-2 capitalize">{row.status}</td>
                 <td className="px-4 py-2 hidden sm:table-cell">{row.userId}</td>
@@ -182,7 +182,7 @@ export default function Overview() {
             ))}
             {!emergencies.length && (
               <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={3} className="px-4 py-8 text-center text-brand-sub">
                   No active rows. Pending requests from users appear here once the
                   API notifies drivers.
                 </td>

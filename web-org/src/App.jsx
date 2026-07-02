@@ -14,7 +14,7 @@ function PrivateShell() {
   const { loading, profile } = useAuth();
   if (loading) {
     return (
-      <div className="min-h-full flex items-center justify-center text-slate-600">
+      <div className="min-h-full flex items-center justify-center text-brand-sub">
         Loading…
       </div>
     );

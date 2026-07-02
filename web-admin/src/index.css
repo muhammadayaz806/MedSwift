@@ -2,8 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body,
-#root {
-  height: 100%;
+@layer base {
+  :root {
+    --brand-bg: 255 247 247;
+    --brand-surface: 255 245 245;
+    --brand-muted: 254 226 226;
+    --brand-border: 254 202 202;
+    --brand-soft: 252 165 165;
+    --brand-text: 127 29 29;
+    --brand-sub: 153 27 27;
+    --brand-accent: 185 28 28;
+    --brand-dark: 69 10 10;
+    --brand-card: 255 255 255;
+    --brand-ink: 127 29 29;
+    --shadow-card: 0 10px 30px -12px rgba(69, 10, 10, 0.18);
+  }
+
+  .dark {
+    --brand-bg: 15 6 6;
+    --brand-surface: 28 12 12;
+    --brand-muted: 55 22 22;
+    --brand-border: 82 28 28;
+    --brand-soft: 127 29 29;
+    --brand-text: 254 226 226;
+    --brand-sub: 252 165 165;
+    --brand-accent: 248 113 113;
+    --brand-dark: 5 2 2;
+    --brand-card: 32 14 14;
+    --brand-ink: 254 242 242;
+    --shadow-card: 0 12px 36px -10px rgba(0, 0, 0, 0.55);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-brand-bg text-brand-text font-sans antialiased transition-colors duration-300;
+  }
 }

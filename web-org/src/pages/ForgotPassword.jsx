@@ -24,10 +24,10 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-full flex items-center justify-center p-6 bg-gradient-to-br from-primary to-primary-dark">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl p-8">
-        <h1 className="text-2xl font-bold text-slate-900">Reset password</h1>
-        <p className="text-slate-600 text-sm mt-2">
+    <div className="min-h-full flex items-center justify-center p-6 bg-gradient-to-br from-brand-dark to-brand-text">
+      <div className="w-full max-w-md rounded-2xl bg-brand-card shadow-card p-8">
+        <h1 className="text-2xl font-bold text-brand-text">Reset password</h1>
+        <p className="text-brand-sub text-sm mt-2">
           Enter your organization account email. We will send a reset link.
         </p>
 
@@ -39,7 +39,7 @@ export default function ForgotPassword() {
             </p>
             <Link
               to="/login"
-              className="block text-center text-primary font-medium hover:underline"
+              className="block text-center text-brand-accent font-medium hover:underline"
             >
               Back to sign in
             </Link>
@@ -47,11 +47,11 @@ export default function ForgotPassword() {
         ) : (
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-brand-text">
                 Email
               </label>
               <input
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                className="mt-1 w-full rounded-lg border border-brand-border bg-brand-card px-3 py-2 text-sm text-brand-text focus:ring-2 focus:ring-brand-accent outline-none"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -60,19 +60,19 @@ export default function ForgotPassword() {
               />
             </div>
             {err && (
-              <p className="text-sm text-emergency bg-red-50 rounded-lg px-3 py-2">
+              <p className="text-sm text-brand-red bg-brand-muted rounded-lg px-3 py-2">
                 {err}
               </p>
             )}
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-xl bg-primary text-white font-semibold py-3 hover:bg-primary-dark transition disabled:opacity-60"
+              className="w-full rounded-xl bg-brand-emergency text-white font-semibold py-3 hover:bg-brand-red transition disabled:opacity-60"
             >
               {busy ? "Sending…" : "Send reset link"}
             </button>
-            <p className="text-center text-sm text-slate-500">
-              <Link to="/login" className="text-primary font-medium hover:underline">
+            <p className="text-center text-sm text-brand-sub">
+              <Link to="/login" className="text-brand-accent font-medium hover:underline">
                 Back to sign in
               </Link>
             </p>

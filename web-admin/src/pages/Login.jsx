@@ -23,20 +23,20 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-full flex items-center justify-center p-6 bg-slate-950">
-      <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-slate-800 shadow-xl p-8">
-        <h1 className="text-2xl font-bold text-white">Super admin</h1>
-        <p className="text-slate-400 text-sm mt-2">
+    <div className="min-h-full flex items-center justify-center p-6 bg-brand-bg">
+      <div className="w-full max-w-md rounded-2xl bg-brand-card border border-brand-border shadow-card p-8">
+        <h1 className="text-2xl font-bold text-brand-ink">Super admin</h1>
+        <p className="text-brand-sub text-sm mt-2">
           Restricted access. Use credentials provisioned in Firebase Auth +
-          Firestore <code className="text-slate-300">role: admin</code>.
+          Firestore <code className="text-brand-soft">role: admin</code>.
         </p>
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300">
+            <label className="block text-sm font-medium text-brand-text">
               Email
             </label>
             <input
-              className="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-primary-accent"
+              className="mt-1 w-full rounded-lg bg-brand-bg border border-brand-border px-3 py-2 text-sm text-brand-ink outline-none focus:ring-2 focus:ring-brand-accent"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -45,11 +45,11 @@ export default function Login() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300">
+            <label className="block text-sm font-medium text-brand-text">
               Password
             </label>
             <input
-              className="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-primary-accent"
+              className="mt-1 w-full rounded-lg bg-brand-bg border border-brand-border px-3 py-2 text-sm text-brand-ink outline-none focus:ring-2 focus:ring-brand-accent"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -58,19 +58,19 @@ export default function Login() {
             />
           </div>
           {err && (
-            <p className="text-sm text-red-400 bg-red-950/50 rounded-lg px-3 py-2">
+            <p className="text-sm text-brand-accent bg-brand-muted/40 rounded-lg px-3 py-2 border border-brand-border">
               {err}
             </p>
           )}
           <button
             type="submit"
-            className="w-full rounded-xl bg-primary-accent text-white font-semibold py-3 hover:opacity-95 transition"
+            className="w-full rounded-xl bg-brand-emergency text-white font-semibold py-3 hover:bg-brand-red transition"
           >
             Sign in
           </button>
         </form>
-        <p className="text-center text-sm text-slate-500 mt-4">
-          <Link to="/forgot-password" className="text-primary-accent hover:underline">
+        <p className="text-center text-sm text-brand-sub mt-4">
+          <Link to="/forgot-password" className="text-brand-accent hover:underline">
             Forgot password?
           </Link>
         </p>
