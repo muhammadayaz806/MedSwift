@@ -22,6 +22,13 @@ export default function ForgotPasswordScreen({ navigation }) {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
+  function validatePassword(pw) {
+    if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_]).{8,}$/.test(pw)) {
+      return "Password must be at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character (!@#$%^&*_).";
+    }
+    return "";
+  }
+
   async function sendCode() {
     setErr("");
     setMsg("");
@@ -67,6 +74,12 @@ export default function ForgotPasswordScreen({ navigation }) {
     setErr("");
     setMsg("");
     setBusy(true);
+    const validationError = validatePassword(newPassword);
+    if (validationError) {
+      setErr(validationError);
+      setBusy(false);
+      return;
+    }
     try {
       await api("/auth/email/password/reset", {
         method: "POST",
@@ -126,14 +139,19 @@ export default function ForgotPasswordScreen({ navigation }) {
         )}
 
         {step >= 3 && (
-          <TextInput
-            placeholder="New password (min 6)"
-            placeholderTextColor="#fca5a5"
-            secureTextEntry
-            style={styles.input}
-            value={newPassword}
-            onChangeText={setNewPassword}
-          />
+          <>
+            <TextInput
+              placeholder="New password"
+              placeholderTextColor="#fca5a5"
+              secureTextEntry
+              style={styles.input}
+              value={newPassword}
+              onChangeText={setNewPassword}
+            />
+            {!!validatePassword(newPassword) && !!newPassword && (
+              <Text style={styles.pwHint}>{validatePassword(newPassword)}</Text>
+            )}
+          </>
         )}
 
         {!!err && <Text style={styles.err}>{err}</Text>}
@@ -161,7 +179,7 @@ export default function ForgotPasswordScreen({ navigation }) {
           <Pressable
             style={[styles.primaryBtn, busy && styles.btnDisabled]}
             onPress={resetPassword}
-            disabled={busy || newPassword.length < 6}
+            disabled={busy || !!validatePassword(newPassword)}
           >
             <Text style={styles.primaryLbl}>Update password</Text>
           </Pressable>
@@ -197,6 +215,7 @@ const styles = StyleSheet.create({
   },
   inputDisabled: { opacity: 0.5 },
   err: { color: "#b91c1c", fontWeight: "600" },
+  pwHint: { color: "#b91c1c", fontSize: 12, marginTop: -4 },
   msg: { color: "#15803d", fontWeight: "600" },
   primaryBtn: {
     marginTop: 8,

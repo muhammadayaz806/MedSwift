@@ -10,6 +10,14 @@ export default function Drivers() {
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
+  const [pwErr, setPwErr] = useState("");
+
+  function validatePassword(pw) {
+    if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_]).{8,}$/.test(pw)) {
+      return "Password must be at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character (!@#$%^&*_).";
+    }
+    return "";
+  }
 
   async function refresh() {
     const token = await getToken();
@@ -26,6 +34,11 @@ export default function Drivers() {
     e.preventDefault();
     setErr("");
     setMsg("");
+    const validationError = validatePassword(password);
+    if (validationError) {
+      setErr(validationError);
+      return;
+    }
     try {
       const token = await getToken();
       await api(
@@ -111,10 +124,16 @@ export default function Drivers() {
             type="password"
             className="mt-1 w-full rounded-lg border border-brand-border bg-brand-card px-3 py-2 text-sm text-brand-text"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setPwErr(validatePassword(e.target.value));
+            }}
             required
-            minLength={6}
+            minLength={8}
           />
+          {pwErr && (
+            <p className="mt-1 text-xs text-brand-red">{pwErr}</p>
+          )}
         </div>
         <div className="sm:col-span-2 lg:col-span-4 flex flex-wrap gap-3 items-center">
           <button

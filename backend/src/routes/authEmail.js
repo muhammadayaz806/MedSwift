@@ -53,8 +53,12 @@ router.post("/email/password/reset", async (req, res) => {
     if (!email || !token || !newPassword) {
       return res.status(400).json({ error: "email, token, and newPassword required" });
     }
-    if (String(newPassword).length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    const strongPassword = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_])[ -~_]{8,}$/.test(String(newPassword));
+    if (!strongPassword) {
+      return res.status(400).json({
+        error:
+          "Password must be at least 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*_).",
+      });
     }
 
     await consumeVerificationToken(token, email, "password_reset");

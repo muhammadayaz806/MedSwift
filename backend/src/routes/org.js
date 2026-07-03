@@ -43,6 +43,14 @@ router.post(
         .json({ error: "name, email, password required" });
     }
 
+    const strongPassword = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_])[ -~_]{8,}$/.test(String(password));
+    if (!strongPassword) {
+      return res.status(400).json({
+        error:
+          "Password must be at least 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*_).",
+      });
+    }
+
     const db = getDb();
     const orgSnap = await db
       .collection("organizations")

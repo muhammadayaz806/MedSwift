@@ -24,6 +24,13 @@ export default function RegisterScreen({ navigation }) {
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
+  function validatePassword(pw) {
+    if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_]).{8,}$/.test(pw)) {
+      return "Password must be at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character (!@#$%^&*_).";
+    }
+    return "";
+  }
+
   async function sendCode() {
     setErr("");
     setMsg("");
@@ -68,6 +75,12 @@ export default function RegisterScreen({ navigation }) {
   async function onSubmit() {
     setErr("");
     setBusy(true);
+    const validationError = validatePassword(password);
+    if (validationError) {
+      setErr(validationError);
+      setBusy(false);
+      return;
+    }
     try {
       await registerUser({
         name: name.trim(),
@@ -133,13 +146,16 @@ export default function RegisterScreen({ navigation }) {
               onChangeText={setName}
             />
             <TextInput
-              placeholder="Password (min 6)"
+              placeholder="Password"
               placeholderTextColor="#fca5a5"
               secureTextEntry
               style={styles.input}
               value={password}
               onChangeText={setPassword}
             />
+            {!!validatePassword(password) && !!password && (
+              <Text style={styles.pwHint}>{validatePassword(password)}</Text>
+            )}
           </>
         )}
 
@@ -168,7 +184,7 @@ export default function RegisterScreen({ navigation }) {
           <Pressable
             style={[styles.primaryBtn, busy && styles.btnDisabled]}
             onPress={onSubmit}
-            disabled={busy || !name.trim() || password.length < 6}
+            disabled={busy || !name.trim() || !!validatePassword(password)}
           >
             <Text style={styles.primaryLbl}>Register</Text>
           </Pressable>
@@ -204,6 +220,7 @@ const styles = StyleSheet.create({
   },
   inputDisabled: { opacity: 0.5 },
   err: { color: "#b91c1c", fontWeight: "600" },
+  pwHint: { color: "#b91c1c", fontSize: 12, marginTop: -4 },
   msg: { color: "#15803d", fontWeight: "600" },
   primaryBtn: {
     marginTop: 8,

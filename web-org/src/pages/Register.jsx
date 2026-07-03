@@ -10,6 +10,14 @@ export default function Register() {
   const [orgName, setOrgName] = useState("");
   const [orgEmail, setOrgEmail] = useState("");
   const [err, setErr] = useState("");
+  const [pwErr, setPwErr] = useState("");
+
+  function validatePassword(pw) {
+    if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_]).{8,}$/.test(pw)) {
+      return "Password must be at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character (!@#$%^&*_).";
+    }
+    return "";
+  }
 
   if (!loading && profile?.role === "organization") {
     return <Navigate to="/" replace />;
@@ -18,6 +26,11 @@ export default function Register() {
   async function onSubmit(e) {
     e.preventDefault();
     setErr("");
+    const validationError = validatePassword(password);
+    if (validationError) {
+      setErr(validationError);
+      return;
+    }
     try {
       await registerOrg({
         name,
@@ -74,10 +87,16 @@ export default function Register() {
               type="password"
               className="mt-1 w-full rounded-lg border border-brand-border bg-brand-card px-3 py-2 text-sm text-brand-text"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setPwErr(validatePassword(e.target.value));
+              }}
               required
-              minLength={6}
+              minLength={8}
             />
+            {pwErr && (
+              <p className="mt-1 text-xs text-brand-red">{pwErr}</p>
+            )}
           </div>
           <div className="sm:col-span-2">
             <label className="block text-sm font-medium text-brand-text">
