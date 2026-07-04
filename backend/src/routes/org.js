@@ -357,10 +357,47 @@ router.get(
       .limit(200)
       .get();
 
-    const history = snap.docs
+    const completedRequests = snap.docs
       .map((d) => ({ id: d.id, ...d.data() }))
       .filter((r) => r.status === "completed")
       .slice(0, 100);
+
+    const history = [];
+
+    for (const record of completedRequests) {
+      const row = {
+        ...record,
+        requestLabel: "Completed emergency",
+        driverName: "Unassigned driver",
+        organizationName: "Unknown organization",
+      };
+
+      if (record.driverId) {
+        const driverSnap = await db.collection("drivers").doc(record.driverId).get();
+        const driverData = driverSnap.exists ? driverSnap.data() : null;
+        if (driverData?.name) {
+          row.driverName = driverData.name;
+        }
+
+        const orgIdToLookup = record.organizationId || driverData?.orgId;
+        if (orgIdToLookup) {
+          const orgSnap = await db.collection("organizations").doc(orgIdToLookup).get();
+          if (orgSnap.exists && orgSnap.data()?.name) {
+            row.organizationName = orgSnap.data().name;
+          }
+        }
+      }
+
+      const dateSource = record.completedAt || record.createdAt;
+      if (dateSource) {
+        const date = new Date(dateSource);
+        if (!Number.isNaN(date.getTime())) {
+          row.requestLabel = `Emergency on ${date.toLocaleString()}`;
+        }
+      }
+
+      history.push(row);
+    }
 
     return res.json({ history });
   }

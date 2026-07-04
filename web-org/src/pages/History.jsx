@@ -42,22 +42,40 @@ export default function History() {
             <tr>
               <th className="px-4 py-3">Request</th>
               <th className="px-4 py-3">Driver</th>
-              <th className="px-4 py-3 hidden md:table-cell">Completed</th>
+              <th className="px-4 py-3">Organization</th>
+              <th className="px-4 py-3">Completed</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.id} className="border-t border-brand-muted">
-                <td className="px-4 py-3 font-mono text-xs">{r.id}</td>
-                <td className="px-4 py-3 font-mono text-xs">{r.driverId}</td>
-                <td className="px-4 py-3 hidden md:table-cell">
-                  {r.completedAt || "—"}
+                <td className="px-4 py-3">
+                  <div className="font-medium text-brand-text">
+                    {r.requestLabel || "Completed emergency"}
+                  </div>
+                  <div className="text-[11px] text-brand-sub mt-1 font-mono">
+                    {r.id}
+                  </div>
+                </td>
+                <td className="px-4 py-3">{r.driverName || r.driverId || "—"}</td>
+                <td className="px-4 py-3">{r.organizationName || "—"}</td>
+                <td className="px-4 py-3">
+                  {r.completedAt
+                    ? new Date(r.completedAt).toLocaleString(undefined, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "—"}
                 </td>
               </tr>
             ))}
             {!rows.length && (
               <tr>
-                <td colSpan={3} className="px-4 py-10 text-center text-brand-sub">
+                <td colSpan={4} className="px-4 py-10 text-center text-brand-sub">
                   No completed emergencies yet.
                 </td>
               </tr>
