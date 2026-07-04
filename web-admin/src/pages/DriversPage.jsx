@@ -54,7 +54,7 @@ export default function DriversPage() {
                 <td className="px-4 py-3 hidden sm:table-cell text-brand-sub">
                   {d.email}
                 </td>
-                <td className="px-4 py-3 font-mono text-xs">{d.orgId}</td>
+                <td className="px-4 py-3 text-sm">{d.organizationName || d.orgId || "No organization"}</td>
                 <td className="px-4 py-3">{d.isOnline ? "Yes" : "No"}</td>
                 <td className="px-4 py-3 capitalize">{d.status}</td>
               </tr>

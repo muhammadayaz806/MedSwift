@@ -101,10 +101,30 @@ router.get(
   requireRole("admin"),
   async (req, res) => {
     const db = getDb();
-    const snap = await db.collection("drivers").limit(500).get();
-    return res.json({
-      drivers: snap.docs.map((d) => ({ id: d.id, ...d.data() })),
+    const [driversSnap, organizationsSnap] = await Promise.all([
+      db.collection("drivers").limit(500).get(),
+      db.collection("organizations").limit(500).get(),
+    ]);
+
+    const organizationNames = {};
+    for (const orgDoc of organizationsSnap.docs) {
+      const orgData = orgDoc.data() || {};
+      organizationNames[orgDoc.id] = orgData.name || "Unknown organization";
+    }
+
+    const drivers = driversSnap.docs.map((d) => {
+      const data = d.data() || {};
+      const orgId = data.orgId;
+      return {
+        id: d.id,
+        ...data,
+        organizationName: orgId
+          ? organizationNames[orgId] || orgId
+          : "No organization",
+      };
     });
+
+    return res.json({ drivers });
   }
 );
 
