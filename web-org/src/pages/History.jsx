@@ -13,7 +13,14 @@ export default function History() {
       try {
         const token = await getToken();
         const h = await api("/org/emergencies/history", { method: "GET" }, token);
-        if (!cancelled) setRows(h.history || []);
+        if (!cancelled) {
+          const sortedHistory = (h.history || []).sort((a, b) => {
+            const aTime = new Date(a.completedAt || a.createdAt || 0).getTime();
+            const bTime = new Date(b.completedAt || b.createdAt || 0).getTime();
+            return bTime - aTime;
+          });
+          setRows(sortedHistory);
+        }
       } catch (e) {
         if (!cancelled) setErr(e.message);
       }

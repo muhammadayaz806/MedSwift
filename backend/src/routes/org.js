@@ -357,9 +357,17 @@ router.get(
       .limit(200)
       .get();
 
+    const getTimestampMs = (value) => {
+      if (!value) return 0;
+      if (value?.toDate) return value.toDate().getTime();
+      const date = value instanceof Date ? value : new Date(value);
+      return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+    };
+
     const completedRequests = snap.docs
       .map((d) => ({ id: d.id, ...d.data() }))
       .filter((r) => r.status === "completed")
+      .sort((a, b) => getTimestampMs(b.completedAt || b.createdAt) - getTimestampMs(a.completedAt || a.createdAt))
       .slice(0, 100);
 
     const history = [];
