@@ -146,12 +146,86 @@ router.get(
       .limit(100)
       .get();
 
-    return res.json({
-      emergencies: [
-        ...pending.docs.map((d) => ({ id: d.id, ...d.data() })),
-        ...accepted.docs.map((d) => ({ id: d.id, ...d.data() })),
-      ],
+    const records = [
+      ...pending.docs.map((d) => ({ id: d.id, ...d.data() })),
+      ...accepted.docs.map((d) => ({ id: d.id, ...d.data() })),
+    ];
+
+    const userIds = [...new Set(records.map((r) => r.userId).filter(Boolean))];
+    const driverIds = [...new Set(records.map((r) => r.driverId).filter(Boolean))];
+    const organizationIds = [
+      ...new Set(
+        records
+          .map((r) => r.organizationId)
+          .filter(Boolean)
+          .concat(records.map((r) => r.driverOrganizationId).filter(Boolean))
+      ),
+    ];
+
+    const [usersSnap, driversSnap, organizationsSnap] = await Promise.all([
+      userIds.length
+        ? Promise.all(userIds.map((id) => db.collection("users").doc(id).get()))
+        : Promise.resolve([]),
+      driverIds.length
+        ? Promise.all(driverIds.map((id) => db.collection("drivers").doc(id).get()))
+        : Promise.resolve([]),
+      organizationIds.length
+        ? Promise.all(organizationIds.map((id) => db.collection("organizations").doc(id).get()))
+        : Promise.resolve([]),
+    ]);
+
+    const userMap = new Map(
+      usersSnap.map((doc) => [doc.id, { ...(doc.data() || {}), id: doc.id }])
+    );
+    const driverMap = new Map(
+      driversSnap.map((doc) => [doc.id, { ...(doc.data() || {}), id: doc.id }])
+    );
+    const organizationMap = new Map(
+      organizationsSnap.map((doc) => [doc.id, { ...(doc.data() || {}), id: doc.id }])
+    );
+
+    const emergencies = records.map((record) => {
+      const row = {
+        ...record,
+        requestLabel: "Emergency request",
+        userName: "Unknown user",
+        userEmail: "—",
+        driverName: "—",
+        driverOrganizationName: "—",
+      };
+
+      const userData = record.userId ? userMap.get(record.userId) : null;
+      if (userData) {
+        row.userName = userData.name || userData.displayName || userData.email || record.userId;
+        row.userEmail = userData.email || "—";
+      }
+
+      if (record.driverId) {
+        const driverData = driverMap.get(record.driverId);
+        if (driverData?.name) {
+          row.driverName = driverData.name;
+        }
+        const orgIdToLookup = record.organizationId || driverData?.orgId;
+        if (orgIdToLookup) {
+          const orgData = organizationMap.get(orgIdToLookup);
+          if (orgData?.name) {
+            row.driverOrganizationName = orgData.name;
+          }
+        }
+      }
+
+      const dateSource = record.createdAt || record.updatedAt || record.acceptedAt;
+      if (dateSource) {
+        const date = new Date(dateSource);
+        if (!Number.isNaN(date.getTime())) {
+          row.requestLabel = `Emergency on ${date.toLocaleString()}`;
+        }
+      }
+
+      return row;
     });
+
+    return res.json({ emergencies });
   }
 );
 
