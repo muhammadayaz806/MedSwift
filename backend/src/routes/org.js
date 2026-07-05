@@ -437,7 +437,71 @@ router.get(
       .map((d) => ({ id: d.id, ...d.data() }))
       .filter((r) => driverIds.has(r.reporterId));
 
-    return res.json({ reports });
+    const driverIdsToLookup = [...new Set(reports.map((r) => r.reporterId).filter(Boolean))];
+    const userIdsToLookup = [...new Set(reports.map((r) => r.reportedUserId).filter(Boolean))];
+    const requestIdsToLookup = [...new Set(reports.map((r) => r.requestId).filter(Boolean))];
+
+    const [driversLookupSnap, usersLookupSnap, requestsLookupSnap] = await Promise.all([
+      driverIdsToLookup.length
+        ? Promise.all(driverIdsToLookup.map((id) => db.collection("drivers").doc(id).get()))
+        : Promise.resolve([]),
+      userIdsToLookup.length
+        ? Promise.all(userIdsToLookup.map((id) => db.collection("users").doc(id).get()))
+        : Promise.resolve([]),
+      requestIdsToLookup.length
+        ? Promise.all(requestIdsToLookup.map((id) => db.collection("requests").doc(id).get()))
+        : Promise.resolve([]),
+    ]);
+
+    const driverMap = new Map(
+      driversLookupSnap.map((doc) => [doc.id, { ...(doc.data() || {}), id: doc.id }])
+    );
+    const userMap = new Map(
+      usersLookupSnap.map((doc) => [doc.id, { ...(doc.data() || {}), id: doc.id }])
+    );
+    const requestMap = new Map(
+      requestsLookupSnap.map((doc) => [doc.id, { ...(doc.data() || {}), id: doc.id }])
+    );
+
+    const enrichedReports = reports.map((report) => {
+      const row = {
+        ...report,
+        requestLabel: "Emergency request",
+        reporterName: report.reporterId || "Unknown driver",
+        reporterEmail: "—",
+        reportedUserName: report.reportedUserId || "Unknown user",
+        reportedUserEmail: "—",
+      };
+
+      const reporterData = report.reporterId ? driverMap.get(report.reporterId) : null;
+      if (reporterData) {
+        row.reporterName =
+          reporterData.name || reporterData.displayName || reporterData.email || report.reporterId;
+        row.reporterEmail = reporterData.email || "—";
+      }
+
+      const userData = report.reportedUserId ? userMap.get(report.reportedUserId) : null;
+      if (userData) {
+        row.reportedUserName =
+          userData.name || userData.displayName || userData.email || report.reportedUserId;
+        row.reportedUserEmail = userData.email || "—";
+      }
+
+      const requestData = report.requestId ? requestMap.get(report.requestId) : null;
+      if (requestData) {
+        const dateSource = requestData.createdAt || requestData.updatedAt || requestData.acceptedAt;
+        if (dateSource) {
+          const date = new Date(dateSource);
+          if (!Number.isNaN(date.getTime())) {
+            row.requestLabel = `Emergency on ${date.toLocaleString()}`;
+          }
+        }
+      }
+
+      return row;
+    });
+
+    return res.json({ reports: enrichedReports });
   }
 );
 

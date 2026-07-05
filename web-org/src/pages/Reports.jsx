@@ -49,9 +49,26 @@ export default function Reports() {
           <tbody>
             {reports.map((r) => (
               <tr key={r.id} className="border-t border-brand-muted align-top">
-                <td className="px-4 py-3 font-mono text-xs">{r.requestId}</td>
-                <td className="px-4 py-3 font-mono text-xs">{r.reporterId}</td>
-                <td className="px-4 py-3 font-mono text-xs">{r.reportedUserId}</td>
+                <td className="px-4 py-3">
+                  <div className="font-medium text-brand-text">{r.requestLabel || "Emergency request"}</div>
+                  <div className="text-[11px] text-brand-sub mt-1 font-mono">{r.requestId || r.id}</div>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="font-medium text-brand-text">{r.reporterName || r.reporterId || "—"}</div>
+                  {r.reporterEmail && r.reporterEmail !== "—" ? (
+                    <div className="text-[11px] text-brand-sub mt-1">{r.reporterEmail}</div>
+                  ) : (
+                    <div className="text-[11px] text-brand-sub mt-1 font-mono">{r.reporterId || "—"}</div>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="font-medium text-brand-text">{r.reportedUserName || r.reportedUserId || "—"}</div>
+                  {r.reportedUserEmail && r.reportedUserEmail !== "—" ? (
+                    <div className="text-[11px] text-brand-sub mt-1">{r.reportedUserEmail}</div>
+                  ) : (
+                    <div className="text-[11px] text-brand-sub mt-1 font-mono">{r.reportedUserId || "—"}</div>
+                  )}
+                </td>
                 <td className="px-4 py-3 hidden lg:table-cell text-brand-sub">
                   {r.notes || "—"}
                 </td>

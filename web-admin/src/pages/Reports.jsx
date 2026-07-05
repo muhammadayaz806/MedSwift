@@ -27,8 +27,24 @@ export default function Reports() {
     };
   }, [getToken]);
 
-  const topOffenders = Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
+  const topOffenders = Object.values(
+    reports.reduce((acc, report) => {
+      const userId = report.reportedUserId;
+      if (!userId) return acc;
+
+      const existing = acc[userId] || {
+        id: userId,
+        name: report.reportedUserName || report.reportedUserId || "Unknown user",
+        count: 0,
+      };
+
+      existing.count += 1;
+      if (report.reportedUserName) existing.name = report.reportedUserName;
+
+      acc[userId] = existing;
+      return acc;
+    }, {})
+  ).sort((a, b) => b.count - a.count)
     .slice(0, 8);
 
   return (
@@ -51,12 +67,12 @@ export default function Reports() {
             Report counts by user
           </p>
           <div className="flex flex-wrap gap-2">
-            {topOffenders.map(([uid, c]) => (
+            {topOffenders.map((offender) => (
               <span
-                key={uid}
-                className="rounded-full bg-brand-bg border border-brand-border px-3 py-1 text-xs font-mono text-brand-soft"
+                key={offender.id}
+                className="rounded-full bg-brand-bg border border-brand-border px-3 py-1 text-xs text-brand-soft"
               >
-                {uid.slice(0, 8)}… ({c})
+                {offender.name || "Unknown user"} ({offender.count})
               </span>
             ))}
           </div>
@@ -75,9 +91,26 @@ export default function Reports() {
           <tbody className="text-brand-text">
             {reports.map((r) => (
               <tr key={r.id} className="border-t border-brand-border align-top">
-                <td className="px-4 py-3 font-mono text-xs">{r.requestId}</td>
-                <td className="px-4 py-3 font-mono text-xs">{r.reporterId}</td>
-                <td className="px-4 py-3 font-mono text-xs">{r.reportedUserId}</td>
+                <td className="px-4 py-3">
+                  <div className="font-medium text-brand-text">{r.requestLabel || "Emergency request"}</div>
+                  <div className="text-[11px] text-brand-sub mt-1 font-mono">{r.requestId || r.id}</div>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="font-medium text-brand-text">{r.reporterName || r.reporterId || "—"}</div>
+                  {r.reporterEmail && r.reporterEmail !== "—" ? (
+                    <div className="text-[11px] text-brand-sub mt-1">{r.reporterEmail}</div>
+                  ) : (
+                    <div className="text-[11px] text-brand-sub mt-1 font-mono">{r.reporterId || "—"}</div>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="font-medium text-brand-text">{r.reportedUserName || r.reportedUserId || "—"}</div>
+                  {r.reportedUserEmail && r.reportedUserEmail !== "—" ? (
+                    <div className="text-[11px] text-brand-sub mt-1">{r.reportedUserEmail}</div>
+                  ) : (
+                    <div className="text-[11px] text-brand-sub mt-1 font-mono">{r.reportedUserId || "—"}</div>
+                  )}
+                </td>
                 <td className="px-4 py-3 hidden lg:table-cell text-brand-sub">
                   {r.notes || "—"}
                 </td>

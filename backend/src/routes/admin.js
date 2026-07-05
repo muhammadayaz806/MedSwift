@@ -244,7 +244,71 @@ router.get(
       counts[r.reportedUserId] = (counts[r.reportedUserId] || 0) + 1;
     }
 
-    return res.json({ reports, countsByUser: counts });
+    const driverIds = [...new Set(reports.map((r) => r.reporterId).filter(Boolean))];
+    const userIds = [...new Set(reports.map((r) => r.reportedUserId).filter(Boolean))];
+    const requestIds = [...new Set(reports.map((r) => r.requestId).filter(Boolean))];
+
+    const [driversSnap, usersSnap, requestsSnap] = await Promise.all([
+      driverIds.length
+        ? Promise.all(driverIds.map((id) => db.collection("drivers").doc(id).get()))
+        : Promise.resolve([]),
+      userIds.length
+        ? Promise.all(userIds.map((id) => db.collection("users").doc(id).get()))
+        : Promise.resolve([]),
+      requestIds.length
+        ? Promise.all(requestIds.map((id) => db.collection("requests").doc(id).get()))
+        : Promise.resolve([]),
+    ]);
+
+    const driverMap = new Map(
+      driversSnap.map((doc) => [doc.id, { ...(doc.data() || {}), id: doc.id }])
+    );
+    const userMap = new Map(
+      usersSnap.map((doc) => [doc.id, { ...(doc.data() || {}), id: doc.id }])
+    );
+    const requestMap = new Map(
+      requestsSnap.map((doc) => [doc.id, { ...(doc.data() || {}), id: doc.id }])
+    );
+
+    const enrichedReports = reports.map((report) => {
+      const row = {
+        ...report,
+        requestLabel: "Emergency request",
+        reporterName: report.reporterId || "Unknown driver",
+        reporterEmail: "—",
+        reportedUserName: report.reportedUserId || "Unknown user",
+        reportedUserEmail: "—",
+      };
+
+      const reporterData = report.reporterId ? driverMap.get(report.reporterId) : null;
+      if (reporterData) {
+        row.reporterName =
+          reporterData.name || reporterData.displayName || reporterData.email || report.reporterId;
+        row.reporterEmail = reporterData.email || "—";
+      }
+
+      const userData = report.reportedUserId ? userMap.get(report.reportedUserId) : null;
+      if (userData) {
+        row.reportedUserName =
+          userData.name || userData.displayName || userData.email || report.reportedUserId;
+        row.reportedUserEmail = userData.email || "—";
+      }
+
+      const requestData = report.requestId ? requestMap.get(report.requestId) : null;
+      if (requestData) {
+        const dateSource = requestData.createdAt || requestData.updatedAt || requestData.acceptedAt;
+        if (dateSource) {
+          const date = new Date(dateSource);
+          if (!Number.isNaN(date.getTime())) {
+            row.requestLabel = `Emergency on ${date.toLocaleString()}`;
+          }
+        }
+      }
+
+      return row;
+    });
+
+    return res.json({ reports: enrichedReports, countsByUser: counts });
   }
 );
 
