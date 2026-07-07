@@ -6,10 +6,13 @@ export default function History() {
   const { getToken } = useAuth();
   const [rows, setRows] = useState([]);
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setErr("");
+      setLoading(true);
       try {
         const token = await getToken();
         const h = await api("/org/emergencies/history", { method: "GET" }, token);
@@ -22,7 +25,12 @@ export default function History() {
           setRows(sortedHistory);
         }
       } catch (e) {
-        if (!cancelled) setErr(e.message);
+        if (!cancelled) {
+          setErr(e.message);
+          setRows([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -54,33 +62,43 @@ export default function History() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} className="border-t border-brand-muted">
-                <td className="px-4 py-3">
-                  <div className="font-medium text-brand-text">
-                    {r.requestLabel || "Completed emergency"}
+            {loading ? (
+              <tr>
+                <td colSpan={4} className="px-4 py-10 text-center text-brand-sub">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-sub border-t-transparent" />
+                    <span>Loading history…</span>
                   </div>
-                  <div className="text-[11px] text-brand-sub mt-1 font-mono">
-                    {r.id}
-                  </div>
-                </td>
-                <td className="px-4 py-3">{r.driverName || r.driverId || "—"}</td>
-                <td className="px-4 py-3">{r.organizationName || "—"}</td>
-                <td className="px-4 py-3">
-                  {r.completedAt
-                    ? new Date(r.completedAt).toLocaleString(undefined, {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      })
-                    : "—"}
                 </td>
               </tr>
-            ))}
-            {!rows.length && (
+            ) : rows.length ? (
+              rows.map((r) => (
+                <tr key={r.id} className="border-t border-brand-muted">
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-brand-text">
+                      {r.requestLabel || "Completed emergency"}
+                    </div>
+                    <div className="text-[11px] text-brand-sub mt-1 font-mono">
+                      {r.id}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">{r.driverName || r.driverId || "—"}</td>
+                  <td className="px-4 py-3">{r.organizationName || "—"}</td>
+                  <td className="px-4 py-3">
+                    {r.completedAt
+                      ? new Date(r.completedAt).toLocaleString(undefined, {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                      : "—"}
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td colSpan={4} className="px-4 py-10 text-center text-brand-sub">
                   No completed emergencies yet.

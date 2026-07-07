@@ -14,12 +14,15 @@ export default function Overview() {
   const [live, setLive] = useState({});
   const [err, setErr] = useState("");
   const [orgInfo, setOrgInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setErr("");
+      setLoading(true);
       try {
         const token = await getToken();
         const [e, d, s] = await Promise.all([
@@ -33,7 +36,14 @@ export default function Overview() {
           setOrgInfo(s.organization);
         }
       } catch (ex) {
-        if (!cancelled) setErr(ex.message);
+        if (!cancelled) {
+          setErr(ex.message);
+          setEmergencies([]);
+          setDrivers([]);
+          setOrgInfo(null);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -169,18 +179,28 @@ export default function Overview() {
             <tr>
               <th className="px-4 py-3">Request</th>
               <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 hidden sm:table-cell">User</th>
+              <th className="px-4 py-3">User</th>
             </tr>
           </thead>
           <tbody>
-            {emergencies.slice(0, 20).map((row) => (
-              <tr key={row.id} className="border-t border-brand-muted">
-                <td className="px-4 py-2 font-mono text-xs">{row.id}</td>
-                <td className="px-4 py-2 capitalize">{row.status}</td>
-                <td className="px-4 py-2 hidden sm:table-cell">{row.userId}</td>
+            {loading ? (
+              <tr>
+                <td colSpan={3} className="px-4 py-8 text-center text-brand-sub">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-sub border-t-transparent" />
+                    <span>Loading operations…</span>
+                  </div>
+                </td>
               </tr>
-            ))}
-            {!emergencies.length && (
+            ) : emergencies.length ? (
+              emergencies.slice(0, 20).map((row) => (
+                <tr key={row.id} className="border-t border-brand-muted">
+                  <td className="px-4 py-2 font-mono text-xs">{row.id}</td>
+                  <td className="px-4 py-2 capitalize">{row.status}</td>
+                  <td className="px-4 py-2">{row.userId}</td>
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td colSpan={3} className="px-4 py-8 text-center text-brand-sub">
                   No active rows. Pending requests from users appear here once the

@@ -11,6 +11,7 @@ export default function Drivers() {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [pwErr, setPwErr] = useState("");
+  const [loading, setLoading] = useState(true);
 
   function validatePassword(pw) {
     if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_]).{8,}$/.test(pw)) {
@@ -20,13 +21,20 @@ export default function Drivers() {
   }
 
   async function refresh() {
+    setErr("");
+    setLoading(true);
     const token = await getToken();
     const d = await api("/org/drivers", { method: "GET" }, token);
     setDrivers(d.drivers || []);
+    setLoading(false);
   }
 
   useEffect(() => {
-    refresh().catch((e) => setErr(e.message));
+    refresh().catch((e) => {
+      setErr(e.message);
+      setDrivers([]);
+      setLoading(false);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -159,41 +167,51 @@ export default function Drivers() {
             </tr>
           </thead>
           <tbody>
-            {drivers.map((d) => (
-              <tr key={d.id} className="border-t border-brand-muted">
-                <td className="px-4 py-3">{d.name}</td>
-                <td className="px-4 py-3 break-all">{d.email}</td>
-                <td className="px-4 py-3 capitalize">{d.status}</td>
-                <td className="px-4 py-3">{d.isOnline ? "Yes" : "No"}</td>
-                <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
-                  {d.status === "active" ? (
-                    <button
-                      type="button"
-                      className="text-amber-700 hover:underline"
-                      onClick={() => toggle(d.id, "inactive")}
-                    >
-                      Deactivate
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="text-green-700 hover:underline"
-                      onClick={() => toggle(d.id, "active")}
-                    >
-                      Activate
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    className="text-brand-red hover:underline"
-                    onClick={() => remove(d.id)}
-                  >
-                    Delete
-                  </button>
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-10 text-center text-brand-sub">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-sub border-t-transparent" />
+                    <span>Loading drivers…</span>
+                  </div>
                 </td>
               </tr>
-            ))}
-            {!drivers.length && (
+            ) : drivers.length ? (
+              drivers.map((d) => (
+                <tr key={d.id} className="border-t border-brand-muted">
+                  <td className="px-4 py-3">{d.name}</td>
+                  <td className="px-4 py-3 break-all">{d.email}</td>
+                  <td className="px-4 py-3 capitalize">{d.status}</td>
+                  <td className="px-4 py-3">{d.isOnline ? "Yes" : "No"}</td>
+                  <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+                    {d.status === "active" ? (
+                      <button
+                        type="button"
+                        className="text-amber-700 hover:underline"
+                        onClick={() => toggle(d.id, "inactive")}
+                      >
+                        Deactivate
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="text-green-700 hover:underline"
+                        onClick={() => toggle(d.id, "active")}
+                      >
+                        Activate
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="text-brand-red hover:underline"
+                      onClick={() => remove(d.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td colSpan={5} className="px-4 py-10 text-center text-brand-sub">
                   No drivers yet.

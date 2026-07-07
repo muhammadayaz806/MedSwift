@@ -9,8 +9,11 @@ export default function Ambulances() {
   const [plate, setPlate] = useState("");
   const [driverId, setDriverId] = useState("");
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(true);
 
   async function refresh() {
+    setErr("");
+    setLoading(true);
     const token = await getToken();
     const [a, d] = await Promise.all([
       api("/org/ambulances", { method: "GET" }, token),
@@ -18,10 +21,16 @@ export default function Ambulances() {
     ]);
     setAmbulances(a.ambulances || []);
     setDrivers(d.drivers || []);
+    setLoading(false);
   }
 
   useEffect(() => {
-    refresh().catch((e) => setErr(e.message));
+    refresh().catch((e) => {
+      setErr(e.message);
+      setAmbulances([]);
+      setDrivers([]);
+      setLoading(false);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -127,27 +136,37 @@ export default function Ambulances() {
             </tr>
           </thead>
           <tbody>
-            {ambulances.map((a) => (
-              <tr key={a.id} className="border-t border-brand-muted">
-                <td className="px-4 py-3 font-semibold">{a.plate}</td>
-                <td className="px-4 py-3 font-mono text-xs">{a.driverId || "—"}</td>
-                <td className="px-4 py-3 text-right">
-                  <select
-                    className="rounded-lg border border-brand-border bg-brand-card px-2 py-1 text-xs max-w-[200px] text-brand-text"
-                    value={a.driverId || ""}
-                    onChange={(e) => assign(a.id, e.target.value)}
-                  >
-                    <option value="">— None —</option>
-                    {drivers.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name}
-                      </option>
-                    ))}
-                  </select>
+            {loading ? (
+              <tr>
+                <td colSpan={3} className="px-4 py-10 text-center text-brand-sub">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-sub border-t-transparent" />
+                    <span>Loading ambulances…</span>
+                  </div>
                 </td>
               </tr>
-            ))}
-            {!ambulances.length && (
+            ) : ambulances.length ? (
+              ambulances.map((a) => (
+                <tr key={a.id} className="border-t border-brand-muted">
+                  <td className="px-4 py-3 font-semibold">{a.plate}</td>
+                  <td className="px-4 py-3 font-mono text-xs">{a.driverId || "—"}</td>
+                  <td className="px-4 py-3 text-right">
+                    <select
+                      className="rounded-lg border border-brand-border bg-brand-card px-2 py-1 text-xs max-w-[200px] text-brand-text"
+                      value={a.driverId || ""}
+                      onChange={(e) => assign(a.id, e.target.value)}
+                    >
+                      <option value="">— None —</option>
+                      {drivers.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td colSpan={3} className="px-4 py-10 text-center text-brand-sub">
                   No ambulances registered.

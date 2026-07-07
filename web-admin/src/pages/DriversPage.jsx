@@ -6,16 +6,24 @@ export default function DriversPage() {
   const { getToken } = useAuth();
   const [drivers, setDrivers] = useState([]);
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setErr("");
+      setLoading(true);
       try {
         const token = await getToken();
         const r = await api("/admin/drivers", { method: "GET" }, token);
         if (!cancelled) setDrivers(r.drivers || []);
       } catch (e) {
-        if (!cancelled) setErr(e.message);
+        if (!cancelled) {
+          setErr(e.message);
+          setDrivers([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -48,18 +56,28 @@ export default function DriversPage() {
             </tr>
           </thead>
           <tbody className="text-brand-text">
-            {drivers.map((d) => (
-              <tr key={d.id} className="border-t border-brand-border">
-                <td className="px-4 py-3">{d.name}</td>
-                <td className="px-4 py-3 hidden sm:table-cell text-brand-sub">
-                  {d.email}
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-10 text-center text-brand-sub">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-sub border-t-transparent" />
+                    <span>Loading drivers…</span>
+                  </div>
                 </td>
-                <td className="px-4 py-3 text-sm">{d.organizationName || d.orgId || "No organization"}</td>
-                <td className="px-4 py-3">{d.isOnline ? "Yes" : "No"}</td>
-                <td className="px-4 py-3 capitalize">{d.status}</td>
               </tr>
-            ))}
-            {!drivers.length && (
+            ) : drivers.length ? (
+              drivers.map((d) => (
+                <tr key={d.id} className="border-t border-brand-border">
+                  <td className="px-4 py-3">{d.name}</td>
+                  <td className="px-4 py-3 hidden sm:table-cell text-brand-sub">
+                    {d.email}
+                  </td>
+                  <td className="px-4 py-3 text-sm">{d.organizationName || d.orgId || "No organization"}</td>
+                  <td className="px-4 py-3">{d.isOnline ? "Yes" : "No"}</td>
+                  <td className="px-4 py-3 capitalize">{d.status}</td>
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td colSpan={5} className="px-4 py-10 text-center text-brand-sub">
                   No drivers.

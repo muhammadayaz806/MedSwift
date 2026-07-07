@@ -7,10 +7,13 @@ export default function Reports() {
   const [reports, setReports] = useState([]);
   const [counts, setCounts] = useState({});
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setErr("");
+      setLoading(true);
       try {
         const token = await getToken();
         const r = await api("/admin/reports", { method: "GET" }, token);
@@ -19,7 +22,13 @@ export default function Reports() {
           setCounts(r.countsByUser || {});
         }
       } catch (e) {
-        if (!cancelled) setErr(e.message);
+        if (!cancelled) {
+          setErr(e.message);
+          setReports([]);
+          setCounts({});
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -89,34 +98,44 @@ export default function Reports() {
             </tr>
           </thead>
           <tbody className="text-brand-text">
-            {reports.map((r) => (
-              <tr key={r.id} className="border-t border-brand-border align-top">
-                <td className="px-4 py-3">
-                  <div className="font-medium text-brand-text">{r.requestLabel || "Emergency request"}</div>
-                  <div className="text-[11px] text-brand-sub mt-1 font-mono">{r.requestId || r.id}</div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="font-medium text-brand-text">{r.reporterName || r.reporterId || "—"}</div>
-                  {r.reporterEmail && r.reporterEmail !== "—" ? (
-                    <div className="text-[11px] text-brand-sub mt-1">{r.reporterEmail}</div>
-                  ) : (
-                    <div className="text-[11px] text-brand-sub mt-1 font-mono">{r.reporterId || "—"}</div>
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="font-medium text-brand-text">{r.reportedUserName || r.reportedUserId || "—"}</div>
-                  {r.reportedUserEmail && r.reportedUserEmail !== "—" ? (
-                    <div className="text-[11px] text-brand-sub mt-1">{r.reportedUserEmail}</div>
-                  ) : (
-                    <div className="text-[11px] text-brand-sub mt-1 font-mono">{r.reportedUserId || "—"}</div>
-                  )}
-                </td>
-                <td className="px-4 py-3 hidden lg:table-cell text-brand-sub">
-                  {r.notes || "—"}
+            {loading ? (
+              <tr>
+                <td colSpan={4} className="px-4 py-10 text-center text-brand-sub">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-sub border-t-transparent" />
+                    <span>Loading reports…</span>
+                  </div>
                 </td>
               </tr>
-            ))}
-            {!reports.length && (
+            ) : reports.length ? (
+              reports.map((r) => (
+                <tr key={r.id} className="border-t border-brand-border align-top">
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-brand-text">{r.requestLabel || "Emergency request"}</div>
+                    <div className="text-[11px] text-brand-sub mt-1 font-mono">{r.requestId || r.id}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-brand-text">{r.reporterName || r.reporterId || "—"}</div>
+                    {r.reporterEmail && r.reporterEmail !== "—" ? (
+                      <div className="text-[11px] text-brand-sub mt-1">{r.reporterEmail}</div>
+                    ) : (
+                      <div className="text-[11px] text-brand-sub mt-1 font-mono">{r.reporterId || "—"}</div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-brand-text">{r.reportedUserName || r.reportedUserId || "—"}</div>
+                    {r.reportedUserEmail && r.reportedUserEmail !== "—" ? (
+                      <div className="text-[11px] text-brand-sub mt-1">{r.reportedUserEmail}</div>
+                    ) : (
+                      <div className="text-[11px] text-brand-sub mt-1 font-mono">{r.reportedUserId || "—"}</div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 hidden lg:table-cell text-brand-sub">
+                    {r.notes || "—"}
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td colSpan={4} className="px-4 py-10 text-center text-brand-sub">
                   No reports logged.

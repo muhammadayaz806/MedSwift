@@ -6,16 +6,24 @@ export default function Emergencies() {
   const { getToken } = useAuth();
   const [rows, setRows] = useState([]);
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setErr("");
+      setLoading(true);
       try {
         const token = await getToken();
         const r = await api("/admin/emergencies/active", { method: "GET" }, token);
         if (!cancelled) setRows(r.emergencies || []);
       } catch (e) {
-        if (!cancelled) setErr(e.message);
+        if (!cancelled) {
+          setErr(e.message);
+          setRows([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -49,20 +57,30 @@ export default function Emergencies() {
             </tr>
           </thead>
           <tbody className="text-brand-text">
-            {rows.map((x) => (
-              <tr key={x.id} className="border-t border-brand-border align-top">
-                <td className="px-4 py-3">
-                  <div className="font-medium text-brand-text">{x.requestLabel || "Emergency request"}</div>
-                  <div className="text-[11px] text-brand-sub mt-1 font-mono">{x.id}</div>
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-10 text-center text-brand-sub">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-sub border-t-transparent" />
+                    <span>Loading emergencies…</span>
+                  </div>
                 </td>
-                <td className="px-4 py-3 capitalize">{x.status}</td>
-                <td className="px-4 py-3">{x.userName || x.userId || "—"}</td>
-                <td className="px-4 py-3">{x.userEmail || "—"}</td>
-                <td className="px-4 py-3">{x.driverName || x.driverId || "—"}</td>
-                <td className="px-4 py-3">{x.driverOrganizationName || "—"}</td>
               </tr>
-            ))}
-            {!rows.length && (
+            ) : rows.length ? (
+              rows.map((x) => (
+                <tr key={x.id} className="border-t border-brand-border align-top">
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-brand-text">{x.requestLabel || "Emergency request"}</div>
+                    <div className="text-[11px] text-brand-sub mt-1 font-mono">{x.id}</div>
+                  </td>
+                  <td className="px-4 py-3 capitalize">{x.status}</td>
+                  <td className="px-4 py-3">{x.userName || x.userId || "—"}</td>
+                  <td className="px-4 py-3">{x.userEmail || "—"}</td>
+                  <td className="px-4 py-3">{x.driverName || x.driverId || "—"}</td>
+                  <td className="px-4 py-3">{x.driverOrganizationName || "—"}</td>
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-brand-sub">
                   No active emergencies.

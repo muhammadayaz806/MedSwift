@@ -6,15 +6,23 @@ export default function Organizations() {
   const { getToken } = useAuth();
   const [orgs, setOrgs] = useState([]);
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(true);
 
   async function refresh() {
+    setErr("");
+    setLoading(true);
     const token = await getToken();
     const r = await api("/admin/organizations", { method: "GET" }, token);
     setOrgs(r.organizations || []);
+    setLoading(false);
   }
 
   useEffect(() => {
-    refresh().catch((e) => setErr(e.message));
+    refresh().catch((e) => {
+      setErr(e.message);
+      setOrgs([]);
+      setLoading(false);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -73,46 +81,56 @@ export default function Organizations() {
             </tr>
           </thead>
           <tbody className="text-brand-text">
-            {orgs.map((o) => (
-              <tr key={o.id} className="border-t border-brand-border">
-                <td className="px-4 py-3 font-medium">{o.name}</td>
-                <td className="px-4 py-3 hidden sm:table-cell text-brand-sub">
-                  {o.email}
-                </td>
-                <td className="px-4 py-3">{o.verified ? "Yes" : "No"}</td>
-                <td className="px-4 py-3">{o.active !== false ? "Yes" : "No"}</td>
-                <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
-                  {!o.verified && (
-                    <>
-                      <button
-                        type="button"
-                        className="text-green-400 hover:underline"
-                        onClick={() => approve(o.id, true)}
-                      >
-                        Approve
-                      </button>
-                      <button
-                        type="button"
-                        className="text-brand-sub hover:underline"
-                        onClick={() => approve(o.id, false)}
-                      >
-                        Reject
-                      </button>
-                    </>
-                  )}
-                  {o.verified && (
-                    <button
-                      type="button"
-                      className="text-amber-400 hover:underline"
-                      onClick={() => toggleActive(o.id, o.active === false)}
-                    >
-                      {o.active === false ? "Activate" : "Suspend"}
-                    </button>
-                  )}
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-10 text-center text-brand-sub">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-sub border-t-transparent" />
+                    <span>Loading organizations…</span>
+                  </div>
                 </td>
               </tr>
-            ))}
-            {!orgs.length && (
+            ) : orgs.length ? (
+              orgs.map((o) => (
+                <tr key={o.id} className="border-t border-brand-border">
+                  <td className="px-4 py-3 font-medium">{o.name}</td>
+                  <td className="px-4 py-3 hidden sm:table-cell text-brand-sub">
+                    {o.email}
+                  </td>
+                  <td className="px-4 py-3">{o.verified ? "Yes" : "No"}</td>
+                  <td className="px-4 py-3">{o.active !== false ? "Yes" : "No"}</td>
+                  <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+                    {!o.verified && (
+                      <>
+                        <button
+                          type="button"
+                          className="text-green-400 hover:underline"
+                          onClick={() => approve(o.id, true)}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          className="text-brand-sub hover:underline"
+                          onClick={() => approve(o.id, false)}
+                        >
+                          Reject
+                        </button>
+                      </>
+                    )}
+                    {o.verified && (
+                      <button
+                        type="button"
+                        className="text-amber-400 hover:underline"
+                        onClick={() => toggleActive(o.id, o.active === false)}
+                      >
+                        {o.active === false ? "Activate" : "Suspend"}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td colSpan={5} className="px-4 py-10 text-center text-brand-sub">
                   No organizations registered.
