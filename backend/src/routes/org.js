@@ -470,7 +470,7 @@ router.get(
         }
       }
 
-      const dateSource = record.completedAt || record.createdAt;
+      const dateSource = record.createdAt || record.completedAt;
       if (dateSource) {
         const date = new Date(dateSource);
         if (!Number.isNaN(date.getTime())) {
