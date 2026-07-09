@@ -8,6 +8,7 @@ import {
 } from "../middleware/auth.js";
 import { distanceKm } from "../services/geolocation.js";
 import { sendPushToTokens } from "../services/notifications.js";
+import { getActiveRequest } from "../services/emergencyState.js";
 
 const router = Router();
 const NEARBY_KM = 50;
@@ -25,6 +26,24 @@ router.post(
 
     const db = getDb();
     const rtdb = getRtdb();
+
+    const mineSnap = await db
+      .collection("requests")
+      .where("userId", "==", req.user.uid)
+      .limit(50)
+      .get();
+    const activeRequest = getActiveRequest(
+      mineSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    );
+
+    if (activeRequest) {
+      return res.status(200).json({
+        ok: true,
+        requestId: activeRequest.id,
+        existing: true,
+        message: "You already have an active emergency request.",
+      });
+    }
 
     const requestId = nanoid();
     const reqRef = db.collection("requests").doc(requestId);
@@ -120,16 +139,11 @@ router.get(
       .limit(50)
       .get();
 
-    if (mine.empty) {
-      return res.json({ request: null });
-    }
-    const sorted = mine.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .sort(
-        (a, b) =>
-          String(b.createdAt || "").localeCompare(String(a.createdAt || ""))
-      );
-    return res.json({ request: sorted[0] });
+    const active = getActiveRequest(
+      mine.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    );
+
+    return res.json({ request: active });
   }
 );
 

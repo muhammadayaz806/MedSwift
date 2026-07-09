@@ -58,7 +58,7 @@ export default function UserHomeScreen({ navigation }) {
     setMsg("");
     try {
       const token = await getToken();
-      await api(
+      const result = await api(
         "/emergency/request",
         {
           method: "POST",
@@ -69,7 +69,11 @@ export default function UserHomeScreen({ navigation }) {
         },
         token
       );
-      setMsg("Emergency sent. Open Track to follow your ambulance.");
+      if (result?.existing) {
+        setMsg("You already have an active emergency request. Open Track to follow it.");
+      } else {
+        setMsg("Emergency sent. Open Track to follow your ambulance.");
+      }
       navigation.navigate("Track");
     } catch (e) {
       setMsg(e.message || "Could not send request");
