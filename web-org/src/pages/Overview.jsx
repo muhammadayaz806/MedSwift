@@ -173,7 +173,7 @@ export default function Overview() {
         </LoadScript>
       )}
 
-      <div className="rounded-xl bg-brand-card border border-brand-border overflow-hidden">
+      <div className="rounded-2xl bg-brand-card border border-brand-border overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-brand-surface text-left text-brand-sub">
             <tr>
@@ -194,10 +194,42 @@ export default function Overview() {
               </tr>
             ) : emergencies.length ? (
               emergencies.slice(0, 20).map((row) => (
-                <tr key={row.id} className="border-t border-brand-muted">
-                  <td className="px-4 py-2 font-mono text-xs">{row.id}</td>
-                  <td className="px-4 py-2 capitalize">{row.status}</td>
-                  <td className="px-4 py-2">{row.userId}</td>
+                <tr key={row.id} className="border-t border-brand-muted align-top">
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-brand-text">
+                      {row.requestLabel || "Emergency request"}
+                    </div>
+                    <div className="text-[11px] text-brand-sub mt-1 font-mono">
+                      {row.id}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium capitalize ${
+                        row.status === "accepted"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : row.status === "pending"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-brand-surface text-brand-sub"
+                      }`}
+                    >
+                      {row.status || "unknown"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-brand-text">
+                      {row.userName || row.userId || "—"}
+                    </div>
+                    {row.userEmail && row.userEmail !== "—" ? (
+                      <div className="text-[11px] text-brand-sub mt-1">
+                        {row.userEmail}
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-brand-sub mt-1 font-mono">
+                        {row.userId || "—"}
+                      </div>
+                    )}
+                  </td>
                 </tr>
               ))
             ) : (
