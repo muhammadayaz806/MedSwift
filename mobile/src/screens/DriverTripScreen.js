@@ -14,7 +14,7 @@ import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 
 export default function DriverTripScreen({ route, navigation }) {
-  const { requestId } = route.params || {};
+  const { requestId, requestLabel } = route.params || {};
   const { getToken } = useAuth();
   const timer = useRef(null);
 
@@ -120,8 +120,8 @@ export default function DriverTripScreen({ route, navigation }) {
       <View style={styles.header}>
         <Text style={styles.title}>Active trip</Text>
         <View style={styles.reqChip}>
-          <Text style={styles.reqChipLbl}>Request</Text>
-          <Text style={styles.reqChipVal}>{requestId || "—"}</Text>
+          <Text style={styles.reqChipLbl}>Dispatch</Text>
+          <Text style={styles.reqChipVal}>{requestLabel || "Emergency request"}</Text>
         </View>
       </View>
 
@@ -162,17 +162,26 @@ const styles = StyleSheet.create({
   reqChip: {
     alignSelf: "flex-start",
     flexDirection: "row",
-    alignItems: "baseline",
+    alignItems: "flex-start",
     gap: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 999,
+    borderRadius: 16,
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#fecaca",
+    maxWidth: "100%",
+    flexShrink: 1,
   },
-  reqChipLbl: { color: "#b91c1c", fontSize: 11, fontWeight: "900", letterSpacing: 0.6, textTransform: "uppercase" },
-  reqChipVal: { color: "#7f1d1d", fontFamily: Platform.select({ ios: "Menlo", android: "monospace" }), fontWeight: "800" },
+  reqChipLbl: { color: "#b91c1c", fontSize: 11, fontWeight: "900", letterSpacing: 0.6, textTransform: "uppercase", flexShrink: 0 },
+  reqChipVal: {
+    color: "#7f1d1d",
+    fontFamily: Platform.select({ ios: "Menlo", android: "monospace" }),
+    fontWeight: "800",
+    flex: 1,
+    flexShrink: 1,
+    flexWrap: "wrap",
+  },
   card: {
     marginTop: 4,
     backgroundColor: "#ffffff",

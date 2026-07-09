@@ -68,7 +68,7 @@ export default function DriverHomeScreen({ navigation }) {
     }
   }
 
-  async function accept(id) {
+  async function accept(item) {
     if (!online) {
       Alert.alert("Go online first", "Enable availability before accepting.");
       return;
@@ -77,11 +77,12 @@ export default function DriverHomeScreen({ navigation }) {
       const token = await getToken();
       await api(
         "/driver/accept",
-        { method: "POST", body: JSON.stringify({ requestId: id }) },
+        { method: "POST", body: JSON.stringify({ requestId: item.id }) },
         token
       );
-      setActiveRequest({ id, status: "accepted" });
-      navigation.navigate("DriverTrip", { requestId: id });
+      const requestLabel = item.requestLabel || "Emergency request";
+      setActiveRequest({ id: item.id, status: "accepted", requestLabel });
+      navigation.navigate("DriverTrip", { requestId: item.id, requestLabel });
       await load();
     } catch (e) {
       Alert.alert("Could not accept", e.message);
@@ -90,7 +91,10 @@ export default function DriverHomeScreen({ navigation }) {
 
   function resumeTrip() {
     if (!activeRequest?.id) return;
-    navigation.navigate("DriverTrip", { requestId: activeRequest.id });
+    navigation.navigate("DriverTrip", {
+      requestId: activeRequest.id,
+      requestLabel: activeRequest.requestLabel || "Emergency request",
+    });
   }
 
   return (
@@ -127,7 +131,7 @@ export default function DriverHomeScreen({ navigation }) {
         <View style={styles.activeWrap}>
           <Text style={styles.activeTitle}>Active emergency assigned</Text>
           <Text style={styles.activeMeta}>
-            Request {activeRequest.id} is still active. Re-open trip to continue GPS and complete it.
+            {activeRequest.requestLabel || "Emergency request"} is still active. Re-open trip to continue GPS and complete it.
           </Text>
           <Pressable style={styles.activeBtn} onPress={resumeTrip}>
             <Text style={styles.activeLbl}>Resume active trip</Text>
@@ -161,7 +165,9 @@ export default function DriverHomeScreen({ navigation }) {
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.cardTopRow}>
-              <Text style={styles.cardTitle}>{item.id}</Text>
+              <Text style={styles.cardTitle} numberOfLines={3}>
+                {item.requestLabel || "Emergency request"}
+              </Text>
               <View style={styles.badge}>
                 <Text style={styles.badgeTxt}>{item.status}</Text>
               </View>
@@ -169,7 +175,7 @@ export default function DriverHomeScreen({ navigation }) {
             <Text style={styles.cardMeta}>Tap accept to start navigation and begin GPS streaming.</Text>
             <Pressable
               style={[styles.acceptBtn, !online && styles.acceptBtnDisabled]}
-              onPress={() => accept(item.id)}
+              onPress={() => accept(item)}
               disabled={!online}
             >
               <Text style={styles.acceptLbl}>Accept & navigate</Text>
@@ -242,7 +248,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff5f5",
   },
   activeTitle: { color: "#7f1d1d", fontWeight: "900", fontSize: 13 },
-  activeMeta: { color: "#991b1b", marginTop: 6, lineHeight: 18, fontSize: 12 },
+  activeMeta: { color: "#991b1b", marginTop: 6, lineHeight: 18, fontSize: 12, flexShrink: 1 },
   activeBtn: {
     marginTop: 10,
     borderRadius: 12,
@@ -281,11 +287,18 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 4,
   },
-  cardTopRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 10 },
+  cardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 10,
+  },
   cardTitle: {
     color: "#7f1d1d",
     fontFamily: Platform.select({ ios: "Menlo", android: "monospace" }),
     fontWeight: "800",
+    flex: 1,
+    flexShrink: 1,
   },
   badge: {
     paddingHorizontal: 10,
@@ -294,6 +307,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff5f5",
     borderWidth: 1,
     borderColor: "#fecaca",
+    flexShrink: 0,
   },
   badgeTxt: { color: "#991b1b", fontWeight: "900", fontSize: 11, letterSpacing: 0.2 },
   cardMeta: { color: "#7f1d1d", marginTop: 8, lineHeight: 18, fontSize: 12, opacity: 0.9 },

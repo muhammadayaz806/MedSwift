@@ -9,6 +9,14 @@ import { sendPushToTokens } from "../services/notifications.js";
 
 const router = Router();
 
+function formatRequestLabel(record = {}) {
+  const dateSource = record.createdAt || record.updatedAt || record.acceptedAt;
+  if (!dateSource) return "Emergency request";
+  const date = new Date(dateSource);
+  if (Number.isNaN(date.getTime())) return "Emergency request";
+  return `Emergency on ${date.toLocaleString()}`;
+}
+
 router.patch(
   "/status",
   verifyFirebaseToken,
@@ -51,7 +59,11 @@ router.get(
       .get();
     const activeRequest = activeSnap.empty
       ? null
-      : { id: activeSnap.docs[0].id, ...activeSnap.docs[0].data() };
+      : {
+          id: activeSnap.docs[0].id,
+          ...activeSnap.docs[0].data(),
+          requestLabel: formatRequestLabel(activeSnap.docs[0].data()),
+        };
 
     if (!isOnline) {
       return res.json({ requests: [], orgId, isOnline, activeRequest });
@@ -66,7 +78,13 @@ router.get(
     const list = [];
     for (const doc of pending.docs) {
       const row = doc.data();
-      if (!row.locked) list.push({ id: doc.id, ...row });
+      if (!row.locked) {
+        list.push({
+          id: doc.id,
+          ...row,
+          requestLabel: formatRequestLabel(row),
+        });
+      }
     }
 
     return res.json({ requests: list, orgId, isOnline, activeRequest });
