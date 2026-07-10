@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -13,10 +13,62 @@ import * as Location from "expo-location";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 
+function buildMapsUrl(lat, lng) {
+  const coords = `${lat},${lng}`;
+  return (
+    Platform.select({
+      ios: `comgooglemaps://?daddr=${coords}&directionsmode=driving`,
+      android: `google.navigation:q=${coords}`,
+    }) ||
+    `https://www.google.com/maps/dir/?api=1&destination=${coords}&travelmode=driving`
+  );
+}
+
 export default function DriverTripScreen({ route, navigation }) {
-  const { requestId, requestLabel } = route.params || {};
+  const {
+    requestId,
+    requestLabel,
+    destinationLat: paramLat,
+    destinationLng: paramLng,
+  } = route.params || {};
   const { getToken } = useAuth();
   const timer = useRef(null);
+  const [destination, setDestination] = useState(() =>
+    paramLat != null && paramLng != null
+      ? { latitude: paramLat, longitude: paramLng }
+      : null
+  );
+
+  useEffect(() => {
+    if (destination || !requestId) return undefined;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await getToken();
+        const r = await api("/driver/requests", { method: "GET" }, token);
+        const active = r.activeRequest;
+        if (
+          cancelled ||
+          active?.id !== requestId ||
+          active?.location?.latitude == null ||
+          active?.location?.longitude == null
+        ) {
+          return;
+        }
+        setDestination({
+          latitude: active.location.latitude,
+          longitude: active.location.longitude,
+        });
+      } catch {
+        /* ignore — openMaps will prompt if still missing */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [requestId, destination, getToken]);
 
   useEffect(() => {
     if (!requestId) return undefined;
@@ -52,12 +104,26 @@ export default function DriverTripScreen({ route, navigation }) {
   }, [requestId, getToken]);
 
   async function openMaps() {
-    const url =
-      Platform.select({
-        ios: `maps://?daddr=Emergency`,
-        android: `geo:0,0?q=Emergency`,
-      }) || "https://maps.google.com";
-    Linking.openURL(url).catch(() => {});
+    if (destination?.latitude == null || destination?.longitude == null) {
+      Alert.alert(
+        "Location unavailable",
+        "The emergency pickup coordinates are not on file yet. Pull to refresh on the driver home screen and try again."
+      );
+      return;
+    }
+
+    const { latitude, longitude } = destination;
+    const primary = buildMapsUrl(latitude, longitude);
+    const fallback = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`;
+
+    try {
+      const canOpen = await Linking.canOpenURL(primary);
+      await Linking.openURL(canOpen ? primary : fallback);
+    } catch {
+      Linking.openURL(fallback).catch(() => {
+        Alert.alert("Maps unavailable", "Could not open navigation on this device.");
+      });
+    }
   }
 
   async function completeTrip() {

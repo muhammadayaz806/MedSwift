@@ -88,8 +88,13 @@ export default function DriverHomeScreen({ navigation }) {
         token
       );
       const requestLabel = item.requestLabel || "Emergency request";
-      setActiveRequest({ id: item.id, status: "accepted", requestLabel });
-      navigation.navigate("DriverTrip", { requestId: item.id, requestLabel });
+      setActiveRequest({ id: item.id, status: "accepted", requestLabel, location: item.location });
+      navigation.navigate("DriverTrip", {
+        requestId: item.id,
+        requestLabel,
+        destinationLat: item.location?.latitude,
+        destinationLng: item.location?.longitude,
+      });
       await load();
     } catch (e) {
       Alert.alert("Could not accept", e.message);
@@ -101,6 +106,8 @@ export default function DriverHomeScreen({ navigation }) {
     navigation.navigate("DriverTrip", {
       requestId: activeRequest.id,
       requestLabel: activeRequest.requestLabel || "Emergency request",
+      destinationLat: activeRequest.location?.latitude,
+      destinationLng: activeRequest.location?.longitude,
     });
   }
 
