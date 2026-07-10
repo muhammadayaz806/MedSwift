@@ -65,7 +65,7 @@ router.get(
           requestLabel: formatRequestLabel(activeSnap.docs[0].data()),
         };
 
-    if (!isOnline) {
+    if (!isOnline || activeRequest) {
       return res.json({ requests: [], orgId, isOnline, activeRequest });
     }
 
@@ -113,6 +113,18 @@ router.post(
       return res
         .status(403)
         .json({ error: "Go online before accepting requests" });
+    }
+
+    const activeSnap = await db
+      .collection("requests")
+      .where("driverId", "==", req.user.uid)
+      .where("status", "==", "accepted")
+      .limit(1)
+      .get();
+    if (!activeSnap.empty) {
+      return res.status(409).json({
+        error: "Complete your current trip before accepting another request",
+      });
     }
 
     const reqRef = db.collection("requests").doc(requestId);

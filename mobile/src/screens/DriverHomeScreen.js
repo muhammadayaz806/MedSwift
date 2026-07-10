@@ -73,6 +73,13 @@ export default function DriverHomeScreen({ navigation }) {
       Alert.alert("Go online first", "Enable availability before accepting.");
       return;
     }
+    if (activeRequest?.id) {
+      Alert.alert(
+        "Trip in progress",
+        "Complete your current emergency trip before accepting another request."
+      );
+      return;
+    }
     try {
       const token = await getToken();
       await api(
@@ -150,38 +157,54 @@ export default function DriverHomeScreen({ navigation }) {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Nearby pending requests</Text>
             <Text style={styles.sectionSub}>
-              {online
-                ? "Pull to refresh. Accepting opens the active trip screen."
-                : "You are offline. Go online to receive dispatches."}
+              {activeRequest?.id
+                ? "Finish your active trip before new dispatches become available."
+                : online
+                  ? "Pull to refresh. Accepting opens the active trip screen."
+                  : "You are offline. Go online to receive dispatches."}
             </Text>
           </View>
         }
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
-            <Text style={styles.emptyTitle}>No open requests</Text>
-            <Text style={styles.emptySub}>Stay online — dispatches will appear here.</Text>
+            <Text style={styles.emptyTitle}>
+              {activeRequest?.id ? "No new dispatches" : "No open requests"}
+            </Text>
+            <Text style={styles.emptySub}>
+              {activeRequest?.id
+                ? "Complete your active trip to receive new emergency requests."
+                : "Stay online — dispatches will appear here."}
+            </Text>
           </View>
         }
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.cardTopRow}>
-              <Text style={styles.cardTitle} numberOfLines={3}>
-                {item.requestLabel || "Emergency request"}
-              </Text>
-              <View style={styles.badge}>
-                <Text style={styles.badgeTxt}>{item.status}</Text>
+        renderItem={({ item }) => {
+          const tripInProgress = !!activeRequest?.id;
+          const canAccept = online && !tripInProgress;
+          return (
+            <View style={styles.card}>
+              <View style={styles.cardTopRow}>
+                <Text style={styles.cardTitle} numberOfLines={3}>
+                  {item.requestLabel || "Emergency request"}
+                </Text>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeTxt}>{item.status}</Text>
+                </View>
               </View>
+              <Text style={styles.cardMeta}>
+                {tripInProgress
+                  ? "Complete your active trip before accepting another request."
+                  : "Tap accept to start navigation and begin GPS streaming."}
+              </Text>
+              <Pressable
+                style={[styles.acceptBtn, !canAccept && styles.acceptBtnDisabled]}
+                onPress={() => accept(item)}
+                disabled={!canAccept}
+              >
+                <Text style={styles.acceptLbl}>Accept & navigate</Text>
+              </Pressable>
             </View>
-            <Text style={styles.cardMeta}>Tap accept to start navigation and begin GPS streaming.</Text>
-            <Pressable
-              style={[styles.acceptBtn, !online && styles.acceptBtnDisabled]}
-              onPress={() => accept(item)}
-              disabled={!online}
-            >
-              <Text style={styles.acceptLbl}>Accept & navigate</Text>
-            </Pressable>
-          </View>
-        )}
+          );
+        }}
       />
     </SafeAreaView>
   );
