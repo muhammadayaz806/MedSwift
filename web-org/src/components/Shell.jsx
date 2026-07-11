@@ -17,7 +17,7 @@ export default function Shell() {
   return (
     <div className="min-h-full flex flex-col md:flex-row bg-brand-bg">
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-brand-text text-white shadow-lg transition-transform md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col bg-brand-text text-white shadow-lg transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -30,7 +30,7 @@ export default function Shell() {
             <p className="text-sm text-brand-muted mt-1 truncate">{profile.name}</p>
           )}
         </div>
-        <nav className="p-4 flex flex-col gap-1">
+        <nav className="flex-1 p-4 flex flex-col gap-1">
           {links.map((l) => (
             <NavLink
               key={l.to}
@@ -46,14 +46,16 @@ export default function Shell() {
               {l.label}
             </NavLink>
           ))}
+        </nav>
+        <div className="border-t border-white/10 p-4">
           <button
             type="button"
             onClick={() => logout()}
-            className="mt-4 text-left rounded-lg px-3 py-2 text-sm font-medium bg-brand-emergency hover:bg-brand-red transition"
+            className="w-full text-left rounded-lg px-3 py-2 text-sm font-medium bg-brand-emergency hover:bg-brand-red transition"
           >
             Sign out
           </button>
-        </nav>
+        </div>
       </aside>
 
       {open && (

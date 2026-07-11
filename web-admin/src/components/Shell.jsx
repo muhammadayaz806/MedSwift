@@ -17,7 +17,7 @@ export default function Shell() {
   return (
     <div className="min-h-full flex flex-col md:flex-row bg-brand-bg">
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-brand-surface border-r border-brand-border transition-transform md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col bg-brand-surface border-r border-brand-border transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -27,10 +27,12 @@ export default function Shell() {
           </p>
           <p className="text-lg font-semibold text-brand-ink">Super Admin</p>
           {profile?.name && (
-            <p className="text-sm text-brand-sub mt-1 truncate">{profile.name}</p>
+            <p className="text-sm text-brand-sub mt-1 truncate">
+              {profile.name}
+            </p>
           )}
         </div>
-        <nav className="p-4 flex flex-col gap-1">
+        <nav className="flex-1 p-4 flex flex-col gap-1">
           {links.map((l) => (
             <NavLink
               key={l.to}
@@ -48,14 +50,16 @@ export default function Shell() {
               {l.label}
             </NavLink>
           ))}
+        </nav>
+        <div className="border-t border-brand-border p-4">
           <button
             type="button"
             onClick={() => logout()}
-            className="mt-4 text-left rounded-lg px-3 py-2 text-sm font-medium bg-brand-emergency hover:bg-brand-red text-white transition"
+            className="w-full text-left rounded-lg px-3 py-2 text-sm font-medium bg-brand-emergency hover:bg-brand-red text-white transition"
           >
             Sign out
           </button>
-        </nav>
+        </div>
       </aside>
 
       {open && (
@@ -76,7 +80,9 @@ export default function Shell() {
           >
             Menu
           </button>
-          <span className="font-semibold text-brand-ink truncate">MedSwift Admin</span>
+          <span className="font-semibold text-brand-ink truncate">
+            MedSwift Admin
+          </span>
           <span className="w-14" />
         </header>
         <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">
