@@ -130,7 +130,17 @@ router.get(
       if (data.userId !== req.user.uid) {
         return res.status(403).json({ error: "Forbidden" });
       }
-      return res.json({ request: { id: snap.id, ...data } });
+      // Look up ambulance plate for the assigned driver
+      let ambulancePlate = null;
+      if (data.driverId) {
+        const ambSnap = await db
+          .collection("ambulances")
+          .where("driverId", "==", data.driverId)
+          .limit(1)
+          .get();
+        ambulancePlate = ambSnap.empty ? null : (ambSnap.docs[0].data().plate || null);
+      }
+      return res.json({ request: { id: snap.id, ...data, ambulancePlate } });
     }
 
     const mine = await db
@@ -143,7 +153,18 @@ router.get(
       mine.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
     );
 
-    return res.json({ request: active });
+    // Look up ambulance plate for the assigned driver
+    let ambulancePlate = null;
+    if (active?.driverId) {
+      const ambSnap = await db
+        .collection("ambulances")
+        .where("driverId", "==", active.driverId)
+        .limit(1)
+        .get();
+      ambulancePlate = ambSnap.empty ? null : (ambSnap.docs[0].data().plate || null);
+    }
+
+    return res.json({ request: active ? { ...active, ambulancePlate } : null });
   }
 );
 

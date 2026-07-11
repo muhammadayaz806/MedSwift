@@ -21,6 +21,7 @@ export default function DriverHomeScreen({ navigation }) {
   const [online, setOnline] = useState(false);
   const [requests, setRequests] = useState([]);
   const [activeRequest, setActiveRequest] = useState(null);
+  const [ambulancePlate, setAmbulancePlate] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [msg, setMsg] = useState("");
 
@@ -30,6 +31,7 @@ export default function DriverHomeScreen({ navigation }) {
     setOnline(Boolean(r.isOnline));
     setActiveRequest(r.activeRequest || null);
     setRequests(r.requests || []);
+    setAmbulancePlate(r.ambulancePlate || null);
   }, [getToken]);
 
   useEffect(() => {
@@ -92,6 +94,7 @@ export default function DriverHomeScreen({ navigation }) {
       navigation.navigate("DriverTrip", {
         requestId: item.id,
         requestLabel,
+        ambulancePlate: ambulancePlate || undefined,
         destinationLat: item.location?.latitude,
         destinationLng: item.location?.longitude,
       });
@@ -106,6 +109,7 @@ export default function DriverHomeScreen({ navigation }) {
     navigation.navigate("DriverTrip", {
       requestId: activeRequest.id,
       requestLabel: activeRequest.requestLabel || "Emergency request",
+      ambulancePlate: ambulancePlate || undefined,
       destinationLat: activeRequest.location?.latitude,
       destinationLng: activeRequest.location?.longitude,
     });
@@ -124,6 +128,15 @@ export default function DriverHomeScreen({ navigation }) {
             <Text style={styles.signOutLbl}>Sign out</Text>
           </Pressable>
         </View>
+
+        {!!ambulancePlate && (
+          <View style={styles.plateRow}>
+            <Text style={styles.plateLabel}>🚑 Ambulance</Text>
+            <View style={styles.plateChip}>
+              <Text style={styles.plateChipTxt}>{ambulancePlate}</Text>
+            </View>
+          </View>
+        )}
 
         <View style={styles.statusRow}>
           <View style={[styles.statusChip, online ? styles.statusChipOn : styles.statusChipOff]}>
@@ -144,6 +157,14 @@ export default function DriverHomeScreen({ navigation }) {
       {!!activeRequest?.id && (
         <View style={styles.activeWrap}>
           <Text style={styles.activeTitle}>Active emergency assigned</Text>
+          {!!ambulancePlate && (
+            <View style={styles.activePlateRow}>
+              <Text style={styles.activePlateLabel}>Your ambulance:</Text>
+              <View style={styles.activePlateChip}>
+                <Text style={styles.activePlateChipTxt}>{ambulancePlate}</Text>
+              </View>
+            </View>
+          )}
           <Text style={styles.activeMeta}>
             {activeRequest.requestLabel || "Emergency request"} is still active. Re-open trip to continue GPS and complete it.
           </Text>
@@ -268,6 +289,26 @@ const styles = StyleSheet.create({
   switchRow: { alignItems: "flex-end" },
   switchLbl: { color: "#7f1d1d", marginBottom: 6, fontWeight: "800", fontSize: 12 },
   msg: { color: "#b91c1c", paddingHorizontal: 20, marginBottom: 4, fontWeight: "700" },
+  plateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 10,
+  },
+  plateLabel: { color: "#7f1d1d", fontWeight: "800", fontSize: 13 },
+  plateChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: "#7f1d1d",
+  },
+  plateChipTxt: {
+    color: "#fff",
+    fontWeight: "900",
+    fontSize: 13,
+    letterSpacing: 1.5,
+    fontFamily: Platform.select({ ios: "Menlo", android: "monospace" }),
+  },
   activeWrap: {
     marginHorizontal: 16,
     marginBottom: 10,
@@ -287,6 +328,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#b91c1c",
   },
   activeLbl: { color: "#fff", fontWeight: "900", letterSpacing: 0.2 },
+  activePlateRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 },
+  activePlateLabel: { color: "#7f1d1d", fontWeight: "800", fontSize: 12 },
+  activePlateChip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: "#7f1d1d" },
+  activePlateChipTxt: {
+    color: "#fff",
+    fontWeight: "900",
+    fontSize: 12,
+    letterSpacing: 1.5,
+    fontFamily: Platform.select({ ios: "Menlo", android: "monospace" }),
+  },
   listContent: { paddingBottom: 16 },
   sectionHeader: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 10 },
   sectionTitle: { color: "#7f1d1d", fontWeight: "900", fontSize: 14, letterSpacing: 0.2 },

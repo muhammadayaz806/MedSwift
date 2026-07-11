@@ -28,6 +28,7 @@ export default function DriverTripScreen({ route, navigation }) {
   const {
     requestId,
     requestLabel,
+    ambulancePlate,
     destinationLat: paramLat,
     destinationLng: paramLng,
   } = route.params || {};
@@ -189,6 +190,12 @@ export default function DriverTripScreen({ route, navigation }) {
           <Text style={styles.reqChipLbl}>Dispatch</Text>
           <Text style={styles.reqChipVal}>{requestLabel || "Emergency request"}</Text>
         </View>
+        {!!ambulancePlate && (
+          <View style={styles.plateChip}>
+            <Text style={styles.plateChipLbl}>🚑 Ambulance</Text>
+            <Text style={styles.plateChipVal}>{ambulancePlate}</Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.card}>
@@ -247,6 +254,24 @@ const styles = StyleSheet.create({
     flex: 1,
     flexShrink: 1,
     flexWrap: "wrap",
+  },
+  plateChip: {
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: "#7f1d1d",
+  },
+  plateChipLbl: { color: "#fecaca", fontSize: 11, fontWeight: "900", letterSpacing: 0.4 },
+  plateChipVal: {
+    color: "#fff",
+    fontFamily: Platform.select({ ios: "Menlo", android: "monospace" }),
+    fontWeight: "900",
+    fontSize: 13,
+    letterSpacing: 1.5,
   },
   card: {
     marginTop: 4,

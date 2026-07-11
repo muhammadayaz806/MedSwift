@@ -51,6 +51,14 @@ router.get(
     }
     const { orgId, isOnline = false } = driverSnap.data();
 
+    // Look up the ambulance assigned to this driver
+    const ambSnap = await db
+      .collection("ambulances")
+      .where("driverId", "==", req.user.uid)
+      .limit(1)
+      .get();
+    const ambulancePlate = ambSnap.empty ? null : (ambSnap.docs[0].data().plate || null);
+
     const activeSnap = await db
       .collection("requests")
       .where("driverId", "==", req.user.uid)
@@ -66,7 +74,7 @@ router.get(
         };
 
     if (!isOnline || activeRequest) {
-      return res.json({ requests: [], orgId, isOnline, activeRequest });
+      return res.json({ requests: [], orgId, isOnline, activeRequest, ambulancePlate });
     }
 
     const pending = await db
@@ -87,7 +95,7 @@ router.get(
       }
     }
 
-    return res.json({ requests: list, orgId, isOnline, activeRequest });
+    return res.json({ requests: list, orgId, isOnline, activeRequest, ambulancePlate });
   }
 );
 

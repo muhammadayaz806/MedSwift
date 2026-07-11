@@ -13,7 +13,7 @@ export default function TrackScreen() {
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    let unsub = () => {};
+    let unsub = () => { };
     let cancelled = false;
     (async () => {
       try {
@@ -48,9 +48,9 @@ export default function TrackScreen() {
   const userCoord =
     request?.location?.latitude != null
       ? {
-          latitude: request.location.latitude,
-          longitude: request.location.longitude,
-        }
+        latitude: request.location.latitude,
+        longitude: request.location.longitude,
+      }
       : null;
 
   const ambCoord =
@@ -81,7 +81,8 @@ export default function TrackScreen() {
         <Text style={styles.title}>Track ambulance</Text>
         {request?.id && (
           <Text style={styles.meta}>
-            Request {request.id.slice(0, 8)}… · {request.status}
+            Your Request is {request.status}
+            {/* Request {request.id.slice(0, 8)}… · {request.status} */}
           </Text>
         )}
       </View>
@@ -119,8 +120,20 @@ export default function TrackScreen() {
             <Text style={styles.sheetTxt}>Waiting for a driver to accept…</Text>
           </View>
         )}
+        {request?.driverId && (
+          <View style={styles.plateRow}>
+            <Text style={styles.plateLabel}>🚑 Ambulance on the way</Text>
+            {request?.ambulancePlate ? (
+              <View style={styles.plateChip}>
+                <Text style={styles.plateChipTxt}>{request.ambulancePlate}</Text>
+              </View>
+            ) : (
+              <Text style={styles.plateMuted}>Number not assigned</Text>
+            )}
+          </View>
+        )}
         {request?.driverId && !ambCoord && (
-          <Text style={styles.sheetTxt}>Ambulance assigned — waiting for GPS lock.</Text>
+          <Text style={[styles.sheetTxt, { marginTop: 4 }]}>Waiting for GPS lock…</Text>
         )}
         {ambCoord && (
           <Text style={styles.sheetTxt}>
@@ -154,6 +167,22 @@ const styles = StyleSheet.create({
   },
   sheetTxt: { color: "#7f1d1d" },
   row: { flexDirection: "row", alignItems: "center", gap: 12 },
+  plateRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 6 },
+  plateLabel: { color: "#7f1d1d", fontWeight: "800", fontSize: 13 },
+  plateChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: "#7f1d1d",
+  },
+  plateChipTxt: {
+    color: "#fff",
+    fontWeight: "900",
+    fontSize: 13,
+    letterSpacing: 1.5,
+    fontFamily: Platform.select({ ios: "Menlo", android: "monospace" }),
+  },
+  plateMuted: { color: "#991b1b", fontSize: 12, fontStyle: "italic" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   muted: { color: "#991b1b" },
   err: { color: "#b91c1c", padding: 16 },
