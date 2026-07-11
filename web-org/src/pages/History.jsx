@@ -57,6 +57,7 @@ export default function History() {
             <tr>
               <th className="px-4 py-3">Request</th>
               <th className="px-4 py-3">Driver</th>
+              <th className="px-4 py-3">Ambulance</th>
               <th className="px-4 py-3">Organization</th>
               <th className="px-4 py-3">Completed</th>
             </tr>
@@ -64,7 +65,7 @@ export default function History() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={4} className="px-4 py-10 text-center text-brand-sub">
+                <td colSpan={5} className="px-4 py-10 text-center text-brand-sub">
                   <div className="flex items-center justify-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-sub border-t-transparent" />
                     <span>Loading history…</span>
@@ -83,24 +84,33 @@ export default function History() {
                     </div>
                   </td>
                   <td className="px-4 py-3">{r.driverName || r.driverId || "—"}</td>
+                  <td className="px-4 py-3">
+                    {r.ambulancePlate ? (
+                      <span className="inline-flex items-center rounded-full bg-brand-emergency px-2.5 py-1 text-xs font-bold text-white tracking-widest font-mono">
+                        {r.ambulancePlate}
+                      </span>
+                    ) : (
+                      <span className="text-brand-sub">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{r.organizationName || "—"}</td>
                   <td className="px-4 py-3">
                     {r.completedAt
                       ? new Date(r.completedAt).toLocaleString(undefined, {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                          hour12: true,
-                        })
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
                       : "—"}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="px-4 py-10 text-center text-brand-sub">
+                <td colSpan={5} className="px-4 py-10 text-center text-brand-sub">
                   No completed emergencies yet.
                 </td>
               </tr>

@@ -161,6 +161,7 @@ export default function Drivers() {
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Email</th>
+              <th className="px-4 py-3">Ambulance</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Online</th>
               <th className="px-4 py-3 text-right">Actions</th>
@@ -169,7 +170,7 @@ export default function Drivers() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-brand-sub">
+                <td colSpan={6} className="px-4 py-10 text-center text-brand-sub">
                   <div className="flex items-center justify-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-sub border-t-transparent" />
                     <span>Loading drivers…</span>
@@ -181,6 +182,15 @@ export default function Drivers() {
                 <tr key={d.id} className="border-t border-brand-muted">
                   <td className="px-4 py-3">{d.name}</td>
                   <td className="px-4 py-3 break-all">{d.email}</td>
+                  <td className="px-4 py-3">
+                    {d.ambulancePlate ? (
+                      <span className="inline-flex items-center rounded-full bg-brand-emergency px-2.5 py-1 text-xs font-bold text-white tracking-widest font-mono">
+                        {d.ambulancePlate}
+                      </span>
+                    ) : (
+                      <span className="text-brand-sub text-xs">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 capitalize">{d.status}</td>
                   <td className="px-4 py-3">{d.isOnline ? "Yes" : "No"}</td>
                   <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
@@ -213,7 +223,7 @@ export default function Drivers() {
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-brand-sub">
+                <td colSpan={6} className="px-4 py-10 text-center text-brand-sub">
                   No drivers yet.
                 </td>
               </tr>

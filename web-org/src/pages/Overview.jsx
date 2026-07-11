@@ -180,12 +180,14 @@ export default function Overview() {
               <th className="px-4 py-3">Request</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">User</th>
+              <th className="px-4 py-3">Driver</th>
+              <th className="px-4 py-3">Ambulance</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-brand-sub">
+                <td colSpan={5} className="px-4 py-8 text-center text-brand-sub">
                   <div className="flex items-center justify-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-sub border-t-transparent" />
                     <span>Loading operations…</span>
@@ -205,13 +207,12 @@ export default function Overview() {
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium capitalize ${
-                        row.status === "accepted"
+                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium capitalize ${row.status === "accepted"
                           ? "bg-emerald-100 text-emerald-700"
                           : row.status === "pending"
                             ? "bg-amber-100 text-amber-700"
                             : "bg-brand-surface text-brand-sub"
-                      }`}
+                        }`}
                     >
                       {row.status || "unknown"}
                     </span>
@@ -230,11 +231,23 @@ export default function Overview() {
                       </div>
                     )}
                   </td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-brand-text">{row.driverName || "—"}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    {row.ambulancePlate ? (
+                      <span className="inline-flex items-center rounded-full bg-brand-emergency px-2.5 py-1 text-xs font-bold text-white tracking-widest font-mono">
+                        {row.ambulancePlate}
+                      </span>
+                    ) : (
+                      <span className="text-brand-sub">—</span>
+                    )}
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-brand-sub">
+                <td colSpan={5} className="px-4 py-8 text-center text-brand-sub">
                   No active rows. Pending requests from users appear here once the
                   API notifies drivers.
                 </td>

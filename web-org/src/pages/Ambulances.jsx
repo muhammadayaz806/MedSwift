@@ -148,8 +148,10 @@ export default function Ambulances() {
             ) : ambulances.length ? (
               ambulances.map((a) => (
                 <tr key={a.id} className="border-t border-brand-muted">
-                  <td className="px-4 py-3 font-semibold">{a.plate}</td>
-                  <td className="px-4 py-3 font-mono text-xs">{a.driverId || "—"}</td>
+                  {/* <td className="px-4 py-3 font-semibold">{a.plate}</td>
+                  <td className="px-4 py-3 font-mono text-xs">{a.driverId || "—"}</td> */}
+                  <td className="px-4 py-3 font-semibold font-mono">{a.plate}</td>
+                  <td className="px-4 py-3">{a.driverName || <span className="text-brand-sub text-xs">— Unassigned</span>}</td>
                   <td className="px-4 py-3 text-right">
                     <select
                       className="rounded-lg border border-brand-border bg-brand-card px-2 py-1 text-xs max-w-[200px] text-brand-text"

@@ -51,6 +51,7 @@ export default function DriversPage() {
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3 hidden sm:table-cell">Email</th>
               <th className="px-4 py-3">Org</th>
+              <th className="px-4 py-3">Ambulance</th>
               <th className="px-4 py-3">Online</th>
               <th className="px-4 py-3">Status</th>
             </tr>
@@ -58,7 +59,7 @@ export default function DriversPage() {
           <tbody className="text-brand-text">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-brand-sub">
+                <td colSpan={6} className="px-4 py-10 text-center text-brand-sub">
                   <div className="flex items-center justify-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-sub border-t-transparent" />
                     <span>Loading drivers…</span>
@@ -73,13 +74,22 @@ export default function DriversPage() {
                     {d.email}
                   </td>
                   <td className="px-4 py-3 text-sm">{d.organizationName || d.orgId || "No organization"}</td>
+                  <td className="px-4 py-3">
+                    {d.ambulancePlate ? (
+                      <span className="inline-flex items-center rounded-full bg-brand-accent px-2.5 py-1 text-xs font-bold text-white tracking-widest font-mono">
+                        {d.ambulancePlate}
+                      </span>
+                    ) : (
+                      <span className="text-brand-sub text-xs">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{d.isOnline ? "Yes" : "No"}</td>
                   <td className="px-4 py-3 capitalize">{d.status}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-brand-sub">
+                <td colSpan={6} className="px-4 py-10 text-center text-brand-sub">
                   No drivers.
                 </td>
               </tr>

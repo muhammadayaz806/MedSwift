@@ -101,15 +101,25 @@ router.get(
   requireRole("admin"),
   async (req, res) => {
     const db = getDb();
-    const [driversSnap, organizationsSnap] = await Promise.all([
+    const [driversSnap, organizationsSnap, ambulancesSnap] = await Promise.all([
       db.collection("drivers").limit(500).get(),
       db.collection("organizations").limit(500).get(),
+      db.collection("ambulances").limit(500).get(),
     ]);
 
     const organizationNames = {};
     for (const orgDoc of organizationsSnap.docs) {
       const orgData = orgDoc.data() || {};
       organizationNames[orgDoc.id] = orgData.name || "Unknown organization";
+    }
+
+    // Map driverId -> ambulance plate
+    const ambulancePlateByDriver = {};
+    for (const ambDoc of ambulancesSnap.docs) {
+      const d = ambDoc.data() || {};
+      if (d.driverId && d.plate) {
+        ambulancePlateByDriver[d.driverId] = d.plate;
+      }
     }
 
     const drivers = driversSnap.docs.map((d) => {
@@ -121,6 +131,7 @@ router.get(
         organizationName: orgId
           ? organizationNames[orgId] || orgId
           : "No organization",
+        ambulancePlate: ambulancePlateByDriver[d.id] || null,
       };
     });
 
@@ -161,8 +172,7 @@ router.get(
           .concat(records.map((r) => r.driverOrganizationId).filter(Boolean))
       ),
     ];
-
-    const [usersSnap, driversSnap, organizationsSnap] = await Promise.all([
+    const [usersSnap, driversSnap, organizationsSnap, ambulancesSnap] = await Promise.all([
       userIds.length
         ? Promise.all(userIds.map((id) => db.collection("users").doc(id).get()))
         : Promise.resolve([]),
@@ -172,6 +182,9 @@ router.get(
       organizationIds.length
         ? Promise.all(organizationIds.map((id) => db.collection("organizations").doc(id).get()))
         : Promise.resolve([]),
+      driverIds.length
+        ? db.collection("ambulances").where("driverId", "in", driverIds).get()
+        : Promise.resolve({ docs: [] }),
     ]);
 
     const userMap = new Map(
@@ -184,6 +197,13 @@ router.get(
       organizationsSnap.map((doc) => [doc.id, { ...(doc.data() || {}), id: doc.id }])
     );
 
+    // Map driverId -> ambulance plate
+    const ambulancePlateByDriver = {};
+    for (const ambDoc of ambulancesSnap.docs) {
+      const d = ambDoc.data() || {};
+      if (d.driverId && d.plate) ambulancePlateByDriver[d.driverId] = d.plate;
+    }
+
     const emergencies = records.map((record) => {
       const row = {
         ...record,
@@ -192,6 +212,7 @@ router.get(
         userEmail: "—",
         driverName: "—",
         driverOrganizationName: "—",
+        ambulancePlate: null,
       };
 
       const userData = record.userId ? userMap.get(record.userId) : null;
@@ -212,6 +233,7 @@ router.get(
             row.driverOrganizationName = orgData.name;
           }
         }
+        row.ambulancePlate = ambulancePlateByDriver[record.driverId] || null;
       }
 
       const dateSource = record.createdAt || record.updatedAt || record.acceptedAt;

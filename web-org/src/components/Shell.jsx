@@ -17,9 +17,8 @@ export default function Shell() {
   return (
     <div className="min-h-full flex flex-col md:flex-row bg-brand-bg">
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col bg-brand-text text-white shadow-lg transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
-          open ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 transform flex-col bg-brand-text text-white shadow-lg transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="p-6 border-b border-white/10">
           <p className="text-xs uppercase tracking-wider text-brand-soft">
@@ -38,8 +37,7 @@ export default function Shell() {
               end={l.to === "/"}
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
-                `rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  isActive ? "bg-white/20" : "hover:bg-white/10"
+                `rounded-lg px-3 py-2 text-sm font-medium transition ${isActive ? "bg-white/20" : "hover:bg-white/10"
                 }`
               }
             >
@@ -67,7 +65,7 @@ export default function Shell() {
         />
       )}
 
-      <div className="flex-1 flex flex-col min-h-screen md:min-h-0">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0">
         <header className="sticky top-0 z-20 flex items-center justify-between gap-3 bg-brand-card border-b border-brand-border px-4 py-3 md:hidden">
           <button
             type="button"

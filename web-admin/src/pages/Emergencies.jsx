@@ -53,13 +53,14 @@ export default function Emergencies() {
               <th className="px-4 py-3">User</th>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Driver</th>
+              <th className="px-4 py-3">Ambulance</th>
               <th className="px-4 py-3">Driver Org</th>
             </tr>
           </thead>
           <tbody className="text-brand-text">
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-brand-sub">
+                <td colSpan={7} className="px-4 py-10 text-center text-brand-sub">
                   <div className="flex items-center justify-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-sub border-t-transparent" />
                     <span>Loading emergencies…</span>
@@ -77,12 +78,21 @@ export default function Emergencies() {
                   <td className="px-4 py-3">{x.userName || x.userId || "—"}</td>
                   <td className="px-4 py-3">{x.userEmail || "—"}</td>
                   <td className="px-4 py-3">{x.driverName || x.driverId || "—"}</td>
+                  <td className="px-4 py-3">
+                    {x.ambulancePlate ? (
+                      <span className="inline-flex items-center rounded-full bg-brand-accent px-2.5 py-1 text-xs font-bold text-white tracking-widest font-mono">
+                        {x.ambulancePlate}
+                      </span>
+                    ) : (
+                      <span className="text-brand-sub">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{x.driverOrganizationName || "—"}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-brand-sub">
+                <td colSpan={7} className="px-4 py-10 text-center text-brand-sub">
                   No active emergencies.
                 </td>
               </tr>
