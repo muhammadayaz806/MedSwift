@@ -17,7 +17,7 @@ export default function Shell() {
   return (
     <div className="min-h-full flex flex-col md:flex-row bg-brand-bg">
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col bg-brand-surface border-r border-brand-border transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 transform flex-col bg-brand-surface border-r border-brand-border transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -71,7 +71,7 @@ export default function Shell() {
         />
       )}
 
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0">
         <header className="sticky top-0 z-20 flex md:hidden items-center justify-between gap-3 bg-brand-surface border-b border-brand-border px-4 py-3">
           <button
             type="button"
