@@ -73,6 +73,18 @@ export default function Ambulances() {
     }
   }
 
+  async function removeAmbulance(id) {
+    if (!confirm("Delete this ambulance?")) return;
+    setErr("");
+    try {
+      const token = await getToken();
+      await api(`/org/ambulance/${id}`, { method: "DELETE" }, token);
+      await refresh();
+    } catch (ex) {
+      setErr(ex.message);
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -134,7 +146,7 @@ export default function Ambulances() {
             <tr>
               <th className="px-4 py-3">Ambulance</th>
               <th className="px-4 py-3">Assigned driver</th>
-              <th className="px-4 py-3 text-right">Change</th>
+              <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -154,9 +166,9 @@ export default function Ambulances() {
                   <td className="px-4 py-3 font-mono text-xs">{a.driverId || "—"}</td> */}
                   <td className="px-4 py-3 font-semibold font-mono">{a.plate}</td>
                   <td className="px-4 py-3">{a.driverName || <span className="text-brand-sub text-xs">— Unassigned</span>}</td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right space-x-3 whitespace-nowrap">
                     <select
-                      className="rounded-lg border border-brand-border bg-brand-card px-2 py-1 text-xs max-w-[200px] text-brand-text"
+                      className="rounded-lg border border-brand-border bg-brand-card px-2 py-1 text-xs max-w-[200px] text-brand-text animate-none"
                       value={a.driverId || ""}
                       onChange={(e) => assign(a.id, e.target.value)}
                     >
@@ -167,6 +179,13 @@ export default function Ambulances() {
                         </option>
                       ))}
                     </select>
+                    <button
+                      type="button"
+                      className="text-brand-red hover:underline text-xs"
+                      onClick={() => removeAmbulance(a.id)}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))

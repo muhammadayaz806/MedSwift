@@ -335,6 +335,33 @@ router.patch(
   }
 );
 
+router.delete(
+  "/ambulance/:id",
+  verifyFirebaseToken,
+  loadUserProfile,
+  requireRole("organization"),
+  async (req, res) => {
+    const { id } = req.params;
+    const db = getDb();
+    const orgSnap = await db
+      .collection("organizations")
+      .where("ownerUserId", "==", req.user.uid)
+      .limit(1)
+      .get();
+    if (orgSnap.empty) return res.status(403).json({ error: "No org" });
+    const orgId = orgSnap.docs[0].id;
+
+    const aRef = db.collection("ambulances").doc(id);
+    const aSnap = await aRef.get();
+    if (!aSnap.exists || aSnap.data().orgId !== orgId) {
+      return res.status(404).json({ error: "Not found" });
+    }
+
+    await aRef.delete();
+    return res.json({ ok: true });
+  }
+);
+
 router.get(
   "/ambulances",
   verifyFirebaseToken,
