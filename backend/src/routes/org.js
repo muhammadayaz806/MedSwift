@@ -182,7 +182,7 @@ router.patch(
   requireRole("organization"),
   async (req, res) => {
     const { id } = req.params;
-    const { status, isOnline } = req.body || {};
+    const { status, isOnline, name, email } = req.body || {};
     const db = getDb();
     const orgSnap = await db
       .collection("organizations")
@@ -197,15 +197,96 @@ router.patch(
       return res.status(404).json({ error: "Driver not found" });
     }
 
-    const patch = {};
-    if (status === "active" || status === "inactive") patch.status = status;
-    if (typeof isOnline === "boolean") patch.isOnline = isOnline;
+    const currentDriver = dSnap.data();
 
-    await db.collection("drivers").doc(id).update(patch);
-    if (patch.status === "inactive") {
-      await db.collection("users").doc(id).update({ status: "suspended" });
-    } else if (patch.status === "active") {
-      await db.collection("users").doc(id).update({ status: "active" });
+    // Prepare update structures
+    const authUpdate = {};
+    const userUpdate = {};
+    const driverUpdate = {};
+
+    if (name !== undefined) {
+      const trimmedName = String(name).trim();
+      if (!trimmedName) {
+        return res.status(400).json({ error: "Name cannot be empty" });
+      }
+      authUpdate.displayName = trimmedName;
+      userUpdate.name = trimmedName;
+      driverUpdate.name = trimmedName;
+    }
+
+    if (email !== undefined) {
+      const normalizedEmail = String(email).trim().toLowerCase();
+      if (!normalizedEmail) {
+        return res.status(400).json({ error: "Email cannot be empty" });
+      }
+
+      // Check if email is changing
+      if (normalizedEmail !== currentDriver.email?.toLowerCase()) {
+        // Check if email already exists in Firebase Auth for another user
+        try {
+          const existingAuthUser = await getAuth().getUserByEmail(normalizedEmail);
+          if (existingAuthUser.uid !== id) {
+            return res.status(400).json({
+              error: "An account with this email address already exists. Please use a different email.",
+            });
+          }
+        } catch (e) {
+          if (e.code !== "auth/user-not-found") {
+            return res.status(500).json({ error: e.message || "Failed to check email availability." });
+          }
+        }
+
+        // Check if email already exists in Firestore users collection for another user
+        const userEmailSnap = await db
+          .collection("users")
+          .where("email", "==", normalizedEmail)
+          .limit(2)
+          .get();
+        const hasOther = userEmailSnap.docs.some((doc) => doc.id !== id);
+        if (hasOther) {
+          return res.status(400).json({
+            error: "An account with this email address already exists. Please use a different email.",
+          });
+        }
+
+        authUpdate.email = normalizedEmail;
+        userUpdate.email = normalizedEmail;
+        driverUpdate.email = normalizedEmail;
+      }
+    }
+
+    if (status === "active" || status === "inactive") {
+      driverUpdate.status = status;
+    }
+    if (typeof isOnline === "boolean") {
+      driverUpdate.isOnline = isOnline;
+    }
+
+    // Perform Firebase Auth update if needed
+    if (Object.keys(authUpdate).length > 0) {
+      try {
+        await getAuth().updateUser(id, authUpdate);
+      } catch (e) {
+        return res.status(400).json({ error: e.message || "Failed to update auth credentials." });
+      }
+    }
+
+    // Perform Firestore updates
+    try {
+      if (Object.keys(driverUpdate).length > 0) {
+        await db.collection("drivers").doc(id).update(driverUpdate);
+      }
+      if (Object.keys(userUpdate).length > 0) {
+        await db.collection("users").doc(id).update(userUpdate);
+      }
+
+      if (status === "inactive") {
+        await db.collection("users").doc(id).update({ status: "suspended" });
+      } else if (status === "active") {
+        await db.collection("users").doc(id).update({ status: "active" });
+      }
+    } catch (e) {
+      return res.status(500).json({ error: e.message || "Failed to update database profile" });
     }
 
     return res.json({ ok: true });

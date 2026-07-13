@@ -13,6 +13,11 @@ export default function Drivers() {
   const [pwErr, setPwErr] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // Edit states
+  const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+
   function validatePassword(pw) {
     if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_]).{8,}$/.test(pw)) {
       return "Password must be at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character (!@#$%^&*_).";
@@ -71,6 +76,57 @@ export default function Drivers() {
       setEmail("");
       setPassword("");
       setMsg("Driver created.");
+      await refresh();
+    } catch (ex) {
+      setErr(ex.message);
+    }
+  }
+
+  function startEdit(driver) {
+    setErr("");
+    setMsg("");
+    setEditingId(driver.id);
+    setEditName(driver.name || "");
+    setEditEmail(driver.email || "");
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditName("");
+    setEditEmail("");
+  }
+
+  async function saveEdit(driverId) {
+    setErr("");
+    setMsg("");
+    const trimmedName = editName.trim();
+    const trimmedEmail = editEmail.trim();
+    if (!trimmedName || !trimmedEmail) {
+      setErr("Name and Email are required.");
+      return;
+    }
+
+    const normalizedEmail = trimmedEmail.toLowerCase();
+    const existsLocally = drivers.some(
+      (d) => d.id !== driverId && d.email?.trim().toLowerCase() === normalizedEmail
+    );
+    if (existsLocally) {
+      setErr("A driver with this email address already exists. Please use a different email.");
+      return;
+    }
+
+    try {
+      const token = await getToken();
+      await api(
+        `/org/driver/${driverId}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ name: trimmedName, email: normalizedEmail }),
+        },
+        token
+      );
+      setEditingId(null);
+      setMsg("Driver updated successfully.");
       await refresh();
     } catch (ex) {
       setErr(ex.message);
@@ -190,45 +246,104 @@ export default function Drivers() {
             ) : drivers.length ? (
               drivers.map((d) => (
                 <tr key={d.id} className="border-t border-brand-muted">
-                  <td className="px-4 py-3">{d.name}</td>
-                  <td className="px-4 py-3 break-all">{d.email}</td>
-                  <td className="px-4 py-3">
-                    {d.ambulancePlate ? (
-                      <span className="inline-flex items-center rounded-full bg-brand-emergency px-2.5 py-1 text-xs font-bold text-white tracking-widest font-mono">
-                        {d.ambulancePlate}
-                      </span>
-                    ) : (
-                      <span className="text-brand-sub text-xs">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 capitalize">{d.status}</td>
-                  <td className="px-4 py-3">{d.isOnline ? "Yes" : "No"}</td>
-                  <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
-                    {d.status === "active" ? (
-                      <button
-                        type="button"
-                        className="text-amber-700 hover:underline"
-                        onClick={() => toggle(d.id, "inactive")}
-                      >
-                        Deactivate
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="text-green-700 hover:underline"
-                        onClick={() => toggle(d.id, "active")}
-                      >
-                        Activate
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className="text-brand-red hover:underline"
-                      onClick={() => remove(d.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
+                  {editingId === d.id ? (
+                    <>
+                      <td className="px-4 py-2">
+                        <input
+                          type="text"
+                          className="w-full rounded border border-brand-border bg-brand-card px-2 py-1 text-sm text-brand-text"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          required
+                        />
+                      </td>
+                      <td className="px-4 py-2">
+                        <input
+                          type="email"
+                          className="w-full rounded border border-brand-border bg-brand-card px-2 py-1 text-sm text-brand-text"
+                          value={editEmail}
+                          onChange={(e) => setEditEmail(e.target.value)}
+                          required
+                        />
+                      </td>
+                      <td className="px-4 py-2">
+                        {d.ambulancePlate ? (
+                          <span className="inline-flex items-center rounded-full bg-brand-emergency px-2.5 py-1 text-xs font-bold text-white tracking-widest font-mono">
+                            {d.ambulancePlate}
+                          </span>
+                        ) : (
+                          <span className="text-brand-sub text-xs">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2 capitalize">{d.status}</td>
+                      <td className="px-4 py-2">{d.isOnline ? "Yes" : "No"}</td>
+                      <td className="px-4 py-2 text-right space-x-2 whitespace-nowrap">
+                        <button
+                          type="button"
+                          className="text-green-700 hover:underline font-semibold"
+                          onClick={() => saveEdit(d.id)}
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          className="text-brand-sub hover:underline"
+                          onClick={cancelEdit}
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="px-4 py-3">{d.name}</td>
+                      <td className="px-4 py-3 break-all">{d.email}</td>
+                      <td className="px-4 py-3">
+                        {d.ambulancePlate ? (
+                          <span className="inline-flex items-center rounded-full bg-brand-emergency px-2.5 py-1 text-xs font-bold text-white tracking-widest font-mono">
+                            {d.ambulancePlate}
+                          </span>
+                        ) : (
+                          <span className="text-brand-sub text-xs">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 capitalize">{d.status}</td>
+                      <td className="px-4 py-3">{d.isOnline ? "Yes" : "No"}</td>
+                      <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+                        <button
+                          type="button"
+                          className="text-blue-700 hover:underline font-medium"
+                          onClick={() => startEdit(d)}
+                        >
+                          Edit
+                        </button>
+                        {d.status === "active" ? (
+                          <button
+                            type="button"
+                            className="text-amber-700 hover:underline"
+                            onClick={() => toggle(d.id, "inactive")}
+                          >
+                            Deactivate
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="text-green-700 hover:underline"
+                            onClick={() => toggle(d.id, "active")}
+                          >
+                            Activate
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="text-brand-red hover:underline"
+                          onClick={() => remove(d.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </>
+                  )}
                 </tr>
               ))
             ) : (
