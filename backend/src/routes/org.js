@@ -43,6 +43,8 @@ router.post(
         .json({ error: "name, email, password required" });
     }
 
+    const normalizedEmail = String(email).trim().toLowerCase();
+
     const strongPassword = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_])[ -~_]{8,}$/.test(String(password));
     if (!strongPassword) {
       return res.status(400).json({
@@ -67,10 +69,34 @@ router.post(
       return res.status(403).json({ error: "Organization not verified or inactive" });
     }
 
+    // Check if the email already exists in Firebase Auth
+    try {
+      await getAuth().getUserByEmail(normalizedEmail);
+      return res.status(400).json({
+        error: "An account with this email address already exists. Please use a different email.",
+      });
+    } catch (e) {
+      if (e.code !== "auth/user-not-found") {
+        return res.status(500).json({ error: e.message || "Failed to check email availability." });
+      }
+    }
+
+    // Check if the email already exists in Firestore users collection
+    const userEmailSnap = await db
+      .collection("users")
+      .where("email", "==", normalizedEmail)
+      .limit(1)
+      .get();
+    if (!userEmailSnap.empty) {
+      return res.status(400).json({
+        error: "An account with this email address already exists. Please use a different email.",
+      });
+    }
+
     let uid;
     try {
       const userRecord = await getAuth().createUser({
-        email,
+        email: normalizedEmail,
         password,
         displayName: name,
       });
@@ -82,7 +108,7 @@ router.post(
     try {
       await db.collection("users").doc(uid).set({
         name,
-        email,
+        email: normalizedEmail,
         role: "driver",
         status: "active",
         reportCount: 0,
@@ -96,7 +122,7 @@ router.post(
         status: "active",
         isOnline: false,
         name,
-        email,
+        email: normalizedEmail,
       });
     } catch (e) {
       try {

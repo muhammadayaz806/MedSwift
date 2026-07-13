@@ -47,6 +47,16 @@ export default function Drivers() {
       setErr(validationError);
       return;
     }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const existsLocally = drivers.some(
+      (d) => d.email?.trim().toLowerCase() === normalizedEmail
+    );
+    if (existsLocally) {
+      setErr("A driver with this email address already exists. Please use a different email.");
+      return;
+    }
+
     try {
       const token = await getToken();
       await api(
