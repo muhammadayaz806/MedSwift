@@ -241,6 +241,19 @@ router.post(
       if (!dSnap.exists || dSnap.data().orgId !== orgId) {
         return res.status(400).json({ error: "Invalid driver" });
       }
+
+      // Ensure driver isn't already assigned to another ambulance
+      const existingSnap = await db
+        .collection("ambulances")
+        .where("driverId", "==", driverId)
+        .limit(1)
+        .get();
+      if (!existingSnap.empty) {
+        const existingPlate = existingSnap.docs[0].data().plate || existingSnap.docs[0].id;
+        return res.status(409).json({
+          error: `This driver is already assigned to ambulance ${existingPlate}. A driver can only be assigned to one ambulance at a time.`,
+        });
+      }
     }
 
     const id = nanoid();
@@ -282,6 +295,19 @@ router.patch(
       const dSnap = await db.collection("drivers").doc(driverId).get();
       if (!dSnap.exists || dSnap.data().orgId !== orgId) {
         return res.status(400).json({ error: "Invalid driver" });
+      }
+
+      // Ensure driver isn't already assigned to a *different* ambulance
+      const existingSnap = await db
+        .collection("ambulances")
+        .where("driverId", "==", driverId)
+        .limit(1)
+        .get();
+      if (!existingSnap.empty && existingSnap.docs[0].id !== id) {
+        const existingPlate = existingSnap.docs[0].data().plate || existingSnap.docs[0].id;
+        return res.status(409).json({
+          error: `This driver is already assigned to ambulance ${existingPlate}. A driver can only be assigned to one ambulance at a time.`,
+        });
       }
     }
 
