@@ -236,6 +236,25 @@ router.post(
     if (orgSnap.empty) return res.status(400).json({ error: "No org" });
     const orgId = orgSnap.docs[0].id;
 
+    const normalizedPlate = plate.trim().replace(/\s+/g, " ");
+    if (!/^[A-Z0-9]+([ -][A-Z0-9]+)*$/.test(normalizedPlate)) {
+      return res.status(400).json({
+        error: "Plate number can only contain uppercase letters, numbers, and single spaces or hyphens as separators. Consecutive spaces/hyphens or leading/trailing separators are not allowed.",
+      });
+    }
+
+    // Check if an ambulance with the same plate already exists
+    const plateCheckSnap = await db
+      .collection("ambulances")
+      .where("plate", "==", normalizedPlate)
+      .limit(1)
+      .get();
+    if (!plateCheckSnap.empty) {
+      return res.status(409).json({
+        error: `An ambulance with plate number "${normalizedPlate}" already exists.`,
+      });
+    }
+
     if (driverId) {
       const dSnap = await db.collection("drivers").doc(driverId).get();
       if (!dSnap.exists || dSnap.data().orgId !== orgId) {
@@ -259,7 +278,7 @@ router.post(
     const id = nanoid();
     await db.collection("ambulances").doc(id).set({
       orgId,
-      plate,
+      plate: normalizedPlate,
       driverId: driverId || null,
       createdAt: new Date().toISOString(),
     });

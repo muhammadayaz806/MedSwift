@@ -94,6 +94,8 @@ export default function Ambulances() {
             onChange={(e) => setPlate(e.target.value)}
             placeholder="e.g. KH-227"
             required
+            pattern="^[A-Z0-9]+([ -][A-Z0-9]+)*$"
+            title="Only uppercase letters and numbers separated by a single space or hyphen are allowed. No consecutive spaces or hyphens."
           />
         </div>
         <div className="flex-1 w-full">
