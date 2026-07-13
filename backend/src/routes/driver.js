@@ -135,6 +135,16 @@ router.post(
       });
     }
 
+    // Snapshot the driver's current ambulance so history stays accurate
+    const driverAmbSnap = await db
+      .collection("ambulances")
+      .where("driverId", "==", req.user.uid)
+      .limit(1)
+      .get();
+    const driverAmbDoc = driverAmbSnap.empty ? null : driverAmbSnap.docs[0];
+    const snapshotAmbulancePlate = driverAmbDoc?.data()?.plate || null;
+    const snapshotAmbulanceId = driverAmbDoc?.id || null;
+
     const reqRef = db.collection("requests").doc(requestId);
     let userId;
     try {
@@ -151,6 +161,9 @@ router.post(
           locked: true,
           organizationId: driver.orgId,
           acceptedAt: new Date().toISOString(),
+          // Snapshot ambulance at acceptance time so history is always correct
+          ambulancePlate: snapshotAmbulancePlate,
+          ambulanceId: snapshotAmbulanceId,
         });
         return data.userId;
       });

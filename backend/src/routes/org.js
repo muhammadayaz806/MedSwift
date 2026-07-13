@@ -495,10 +495,7 @@ router.get(
       };
 
       if (record.driverId) {
-        const [driverSnap, ambSnap] = await Promise.all([
-          db.collection("drivers").doc(record.driverId).get(),
-          db.collection("ambulances").where("driverId", "==", record.driverId).limit(1).get(),
-        ]);
+        const driverSnap = await db.collection("drivers").doc(record.driverId).get();
         const driverData = driverSnap.exists ? driverSnap.data() : null;
         if (driverData?.name) {
           row.driverName = driverData.name;
@@ -511,8 +508,20 @@ router.get(
             row.organizationName = orgSnap.data().name;
           }
         }
-        if (!ambSnap.empty && ambSnap.docs[0].data().plate) {
-          row.ambulancePlate = ambSnap.docs[0].data().plate;
+
+        // Prefer the plate snapshotted at acceptance time (accurate historical record).
+        // Fall back to live driver→ambulance lookup only for older requests.
+        if (record.ambulancePlate) {
+          row.ambulancePlate = record.ambulancePlate;
+        } else {
+          const ambSnap = await db
+            .collection("ambulances")
+            .where("driverId", "==", record.driverId)
+            .limit(1)
+            .get();
+          if (!ambSnap.empty && ambSnap.docs[0].data().plate) {
+            row.ambulancePlate = ambSnap.docs[0].data().plate;
+          }
         }
       }
 
