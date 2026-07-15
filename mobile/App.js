@@ -17,9 +17,11 @@ import SupportScreen from "./src/screens/SupportScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
 import DriverHomeScreen from "./src/screens/DriverHomeScreen";
 import DriverTripScreen from "./src/screens/DriverTripScreen";
+import SuspendedAccountScreen from "./src/screens/SuspendedAccountScreen";
 
 const AuthStack = createNativeStackNavigator();
 const DriverStack = createNativeStackNavigator();
+const SuspendedStack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
 
 const navTheme = {
@@ -99,6 +101,17 @@ function DriverNavigator() {
   );
 }
 
+function SuspendedNavigator() {
+  return (
+    <SuspendedStack.Navigator screenOptions={{ headerShown: false }}>
+      <SuspendedStack.Screen
+        name="SuspendedAccount"
+        component={SuspendedAccountScreen}
+      />
+    </SuspendedStack.Navigator>
+  );
+}
+
 function UnsupportedRole() {
   const { logout, profile } = useAuth();
   return (
@@ -160,12 +173,21 @@ function RootNavigator() {
           component={ForgotPasswordScreen}
           initialParams={{ role: "driver" }}
         />
+        <AuthStack.Screen
+          name="SuspendedAccount"
+          component={SuspendedAccountScreen}
+          options={{ title: "Account Deactivated" }}
+        />
       </AuthStack.Navigator>
     );
   }
 
   if (!profile) {
     return <MissingProfile />;
+  }
+
+  if (profile.status === "suspended_by_user") {
+    return <SuspendedNavigator />;
   }
 
   if (profile.role === "user") {

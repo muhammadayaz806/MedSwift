@@ -179,6 +179,31 @@ export function AuthProvider({ children }) {
     return u.getIdToken();
   }, []);
 
+  /** Update the user's display name in Firestore then refresh local profile. */
+  const updateName = useCallback(async (name) => {
+    const u = auth.currentUser;
+    if (!u) throw new Error("Not signed in");
+    const token = await u.getIdToken();
+    await api(
+      "/auth/profile/name",
+      { method: "PATCH", body: JSON.stringify({ name }) },
+      token
+    );
+    await refreshProfile();
+  }, [refreshProfile]);
+
+  /**
+   * Soft-delete: marks account as suspended_by_user in Firestore, then signs out.
+   * The Firebase Auth user is NOT deleted.
+   */
+  const deleteAccount = useCallback(async () => {
+    const u = auth.currentUser;
+    if (!u) throw new Error("Not signed in");
+    const token = await u.getIdToken();
+    await api("/auth/profile/me", { method: "DELETE" }, token);
+    await signOut(auth);
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -190,6 +215,8 @@ export function AuthProvider({ children }) {
       registerUser,
       refreshProfile,
       getToken,
+      updateName,
+      deleteAccount,
     }),
     [
       user,
@@ -201,6 +228,8 @@ export function AuthProvider({ children }) {
       registerUser,
       refreshProfile,
       getToken,
+      updateName,
+      deleteAccount,
     ]
   );
 

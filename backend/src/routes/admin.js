@@ -329,8 +329,92 @@ router.get(
 
       return row;
     });
-
     return res.json({ reports: enrichedReports, countsByUser: counts });
+  }
+);
+
+/** List all unsuspend requests (with user info) for admin review. */
+router.get(
+  "/unsuspend-requests",
+  verifyFirebaseToken,
+  loadUserProfile,
+  requireRole("admin"),
+  async (req, res) => {
+    const db = getDb();
+    const snap = await db
+      .collection("unsuspendRequests")
+      .orderBy("requestedAt", "desc")
+      .limit(200)
+      .get();
+    return res.json({
+      requests: snap.docs.map((d) => ({ id: d.id, ...d.data() })),
+    });
+  }
+);
+
+/** Approve an unsuspend request → set user status back to active. */
+router.post(
+  "/unsuspend-approve",
+  verifyFirebaseToken,
+  loadUserProfile,
+  requireRole("admin"),
+  async (req, res) => {
+    const { requestId, reviewNote } = req.body || {};
+    if (!requestId) {
+      return res.status(400).json({ error: "requestId required" });
+    }
+    const db = getDb();
+    const reqRef = db.collection("unsuspendRequests").doc(requestId);
+    const reqSnap = await reqRef.get();
+    if (!reqSnap.exists) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    const { uid } = reqSnap.data();
+
+    // Reactivate the user account
+    await db.collection("users").doc(uid).update({
+      status: "active",
+      suspendedAt: null,
+    });
+
+    // Mark request as approved
+    await reqRef.update({
+      status: "approved",
+      reviewedAt: new Date().toISOString(),
+      reviewNote: reviewNote || null,
+      reviewedBy: req.profile?.id || req.user.uid,
+    });
+
+    return res.json({ ok: true });
+  }
+);
+
+/** Reject an unsuspend request — account stays suspended_by_user. */
+router.post(
+  "/unsuspend-reject",
+  verifyFirebaseToken,
+  loadUserProfile,
+  requireRole("admin"),
+  async (req, res) => {
+    const { requestId, reviewNote } = req.body || {};
+    if (!requestId) {
+      return res.status(400).json({ error: "requestId required" });
+    }
+    const db = getDb();
+    const reqRef = db.collection("unsuspendRequests").doc(requestId);
+    const reqSnap = await reqRef.get();
+    if (!reqSnap.exists) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    await reqRef.update({
+      status: "rejected",
+      reviewedAt: new Date().toISOString(),
+      reviewNote: reviewNote || null,
+      reviewedBy: req.profile?.id || req.user.uid,
+    });
+
+    return res.json({ ok: true });
   }
 );
 

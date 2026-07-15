@@ -9,6 +9,8 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 
@@ -95,7 +97,60 @@ export default function RegisterScreen({ navigation }) {
         emailVerificationToken: verificationToken,
       });
     } catch (e) {
-      setErr(e.message || "Registration failed");
+      const msg = e.message || "";
+      // Firebase threw email-already-in-use — try signing in and calling bootstrap
+      if (
+        (e.code && e.code.includes("already-in-use")) ||
+        msg.includes("email-already-in-use") ||
+        msg.includes("already-in-use")
+      ) {
+        try {
+          const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
+          const idToken = await cred.user.getIdToken();
+          try {
+            await api(
+              "/auth/profile/bootstrap",
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  name: name.trim(),
+                  role: "user",
+                  email: email.trim(),
+                  emailVerificationToken: verificationToken,
+                }),
+              },
+              idToken
+            );
+            // bootstrap succeeded — AuthContext will pick up the auth state
+          } catch (bootstrapErr) {
+            const bMsg = bootstrapErr.message || "";
+            if (bMsg.includes("deactivated") || bMsg.includes("suspended") || bMsg.includes("Account is suspended")) {
+              // Navigate to the suspended account screen
+              navigation.navigate("SuspendedAccount", {
+                uid: cred.user.uid,
+                email: email.trim(),
+                idToken,
+              });
+              return;
+            }
+            setErr(bootstrapErr.message || "Registration failed.");
+          }
+        } catch (signInErr) {
+          // Wrong password or another error. Let's check if this existing email is suspended.
+          try {
+            const check = await api(`/auth/profile/is-suspended?email=${encodeURIComponent(email.trim())}`);
+            if (check.suspended) {
+              setErr("This email is registered to a deactivated account. Please go back to Login and sign in with your original password to request reinstatement.");
+            } else {
+              setErr("An account with this email already exists. Check your password and try again.");
+            }
+          } catch {
+            setErr("An account with this email already exists. Check your password and try again.");
+          }
+        }
+      } else {
+        setErr(msg || "Registration failed");
+      }
     } finally {
       setBusy(false);
     }

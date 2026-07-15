@@ -25,7 +25,17 @@ router.post("/profile/bootstrap", verifyFirebaseToken, async (req, res) => {
   const ref = db.collection("users").doc(uid);
   const existing = await ref.get();
   if (existing.exists) {
-    return res.json({ ok: true, profile: { id: uid, ...existing.data() } });
+    const data = existing.data();
+    // Account was soft-deleted by the user — block re-registration and prompt unsuspend
+    if (data.status === "suspended_by_user") {
+      return res.status(403).json({
+        error: "This account has been deactivated. Please request reinstatement to log in again.",
+        suspendedByUser: true,
+        uid,
+        email: data.email || email,
+      });
+    }
+    return res.json({ ok: true, profile: { id: uid, ...data } });
   }
 
   if (role === "user") {
@@ -140,6 +150,146 @@ router.get("/profile/me", verifyFirebaseToken, async (req, res) => {
   };
   await db.collection("users").doc(uid).set(profile);
   return res.json({ id: uid, ...profile });
+});
+
+/** Update the authenticated user's display name (citizens and drivers). */
+router.patch("/profile/name", verifyFirebaseToken, async (req, res) => {
+  const { name } = req.body || {};
+  if (!name || !String(name).trim()) {
+    return res.status(400).json({ error: "name is required" });
+  }
+  const db = getDb();
+  const uid = req.user.uid;
+  const ref = db.collection("users").doc(uid);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    return res.status(404).json({ error: "Profile not found" });
+  }
+  const trimmed = String(name).trim();
+  await ref.update({ name: trimmed });
+  return res.json({ ok: true, name: trimmed });
+});
+
+/**
+ * Soft-delete: mark account as suspended_by_user.
+ * Only allowed for role === "user" (citizens). Account is NOT deleted from Firebase Auth.
+ */
+router.delete("/profile/me", verifyFirebaseToken, async (req, res) => {
+  const db = getDb();
+  const uid = req.user.uid;
+  const ref = db.collection("users").doc(uid);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    return res.status(404).json({ error: "Profile not found" });
+  }
+  const data = snap.data();
+  if (data.role !== "user") {
+    return res.status(403).json({ error: "Only citizen accounts can be self-deactivated" });
+  }
+  await ref.update({
+    status: "suspended_by_user",
+    suspendedAt: new Date().toISOString(),
+  });
+  return res.json({ ok: true });
+});
+
+/**
+ * Submit an unsuspend / reinstatement request.
+ * Does NOT use loadUserProfile middleware because the account is suspended.
+ * Creates a doc in "unsuspendRequests" for the super admin to review.
+ */
+router.post("/profile/request-unsuspend", verifyFirebaseToken, async (req, res) => {
+  const db = getDb();
+  const uid = req.user.uid;
+  const email = req.user.email || "";
+
+  const userRef = db.collection("users").doc(uid);
+  const userSnap = await userRef.get();
+  if (!userSnap.exists) {
+    return res.status(404).json({ error: "Profile not found" });
+  }
+  const userData = userSnap.data();
+  if (userData.status !== "suspended_by_user") {
+    return res.status(400).json({ error: "Account is not in a deactivated state" });
+  }
+
+  // Avoid duplicates — return existing pending/approved request
+  const existing = await db
+    .collection("unsuspendRequests")
+    .where("uid", "==", uid)
+    .where("status", "in", ["pending", "approved"])
+    .limit(1)
+    .get();
+
+  if (!existing.empty) {
+    const existingData = existing.docs[0].data();
+    return res.json({
+      ok: true,
+      requestId: existing.docs[0].id,
+      status: existingData.status,
+      alreadyExists: true,
+    });
+  }
+
+  const reqRef = await db.collection("unsuspendRequests").add({
+    uid,
+    email,
+    name: userData.name || "",
+    status: "pending",
+    requestedAt: new Date().toISOString(),
+    reviewedAt: null,
+    reviewNote: null,
+  });
+
+  return res.json({ ok: true, requestId: reqRef.id, status: "pending" });
+});
+
+/** Check the current unsuspend request status for the calling user. */
+router.get("/profile/unsuspend-status", verifyFirebaseToken, async (req, res) => {
+  const db = getDb();
+  const uid = req.user.uid;
+
+  // No orderBy to avoid requiring a composite Firestore index — sort in JS.
+  const snap = await db
+    .collection("unsuspendRequests")
+    .where("uid", "==", uid)
+    .limit(5)
+    .get();
+
+  if (snap.empty) {
+    return res.json({ exists: false });
+  }
+
+  // Pick the most recent request
+  const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  docs.sort((a, b) => (b.requestedAt || "").localeCompare(a.requestedAt || ""));
+  const latest = docs[0];
+
+  return res.json({ exists: true, requestId: latest.id, ...latest });
+});
+
+/** Check if a given email is associated with a deactivated/suspended user account (Public). */
+router.get("/profile/is-suspended", async (req, res) => {
+  const email = String(req.query.email || "").trim().toLowerCase();
+  if (!email) {
+    return res.status(400).json({ error: "email parameter is required" });
+  }
+
+  const db = getDb();
+  const snap = await db
+    .collection("users")
+    .where("email", "==", email)
+    .limit(1)
+    .get();
+
+  if (snap.empty) {
+    return res.json({ suspended: false });
+  }
+
+  const data = snap.docs[0].data();
+  return res.json({
+    suspended: data.status === "suspended_by_user",
+  });
 });
 
 export default router;

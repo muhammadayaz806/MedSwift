@@ -92,7 +92,19 @@ export default function UsersPage() {
                     {u.email}
                   </td>
                   <td className="px-4 py-3 capitalize">{u.role}</td>
-                  <td className="px-4 py-3 capitalize">{u.status}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
+                        u.status === "active"
+                          ? "bg-green-100 text-green-800"
+                          : u.status === "suspended_by_user"
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {u.status === "suspended_by_user" ? "Self-deactivated" : u.status}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 hidden lg:table-cell">{u.reportCount ?? 0}</td>
                   <td className="px-4 py-3 text-right">
                     {u.role === "user" && (

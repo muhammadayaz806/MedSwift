@@ -1,18 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { api } from "../lib/api";
 
-const links = [
+const BASE_LINKS = [
   { to: "/", label: "Organizations" },
   { to: "/users", label: "Users" },
   { to: "/drivers", label: "Drivers" },
   { to: "/emergencies", label: "Emergencies" },
   { to: "/reports", label: "Reports" },
+  { to: "/unsuspend-requests", label: "Unsuspend Requests", badgeKey: "unsuspend" },
 ];
 
 export default function Shell() {
-  const { logout, profile } = useAuth();
+  const { logout, profile, getToken } = useAuth();
   const [open, setOpen] = useState(false);
+  const [pendingUnsuspend, setPendingUnsuspend] = useState(0);
+
+  const fetchPendingCount = useCallback(async () => {
+    try {
+      const token = await getToken();
+      const data = await api("/admin/unsuspend-requests", { method: "GET" }, token);
+      const count = (data.requests || []).filter((r) => r.status === "pending").length;
+      setPendingUnsuspend(count);
+    } catch {
+      // silently fail — badge is non-critical
+    }
+  }, [getToken]);
+
+  useEffect(() => {
+    fetchPendingCount();
+    const interval = setInterval(fetchPendingCount, 60_000); // refresh every minute
+    return () => clearInterval(interval);
+  }, [fetchPendingCount]);
+
+  const badges = { unsuspend: pendingUnsuspend };
 
   return (
     <div className="min-h-full flex flex-col md:flex-row bg-brand-bg">
@@ -33,21 +55,26 @@ export default function Shell() {
           )}
         </div>
         <nav className="flex-1 p-4 flex flex-col gap-1">
-          {links.map((l) => (
+          {BASE_LINKS.map((l) => (
             <NavLink
               key={l.to}
               to={l.to}
               end={l.to === "/"}
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
-                `rounded-lg px-3 py-2 text-sm font-medium transition ${
+                `rounded-lg px-3 py-2 text-sm font-medium transition flex items-center justify-between ${
                   isActive
                     ? "bg-brand-emergency text-white"
                     : "text-brand-text hover:bg-brand-muted"
                 }`
               }
             >
-              {l.label}
+              <span>{l.label}</span>
+              {l.badgeKey && badges[l.badgeKey] > 0 && (
+                <span className="ml-2 inline-flex items-center rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-white">
+                  {badges[l.badgeKey]}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
