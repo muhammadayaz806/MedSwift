@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 
@@ -8,36 +8,41 @@ export default function DriversPage() {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setErr("");
-      setLoading(true);
-      try {
-        const token = await getToken();
-        const r = await api("/admin/drivers", { method: "GET" }, token);
-        if (!cancelled) setDrivers(r.drivers || []);
-      } catch (e) {
-        if (!cancelled) {
-          setErr(e.message);
-          setDrivers([]);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+  const loadDrivers = useCallback(async () => {
+    setErr("");
+    setLoading(true);
+    try {
+      const token = await getToken();
+      const r = await api("/admin/drivers", { method: "GET" }, token);
+      setDrivers(r.drivers || []);
+    } catch (e) {
+      setErr(e.message);
+      setDrivers([]);
+    } finally {
+      setLoading(false);
+    }
   }, [getToken]);
+
+  useEffect(() => {
+    loadDrivers();
+  }, [loadDrivers]);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-brand-ink">Drivers</h1>
-        <p className="text-brand-sub text-sm mt-1">
-          Global roster across organizations.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-brand-ink">Drivers</h1>
+          <p className="text-brand-sub text-sm mt-1">
+            Global roster across organizations.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={loadDrivers}
+          className="shrink-0 rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-text hover:bg-brand-muted transition"
+        >
+          Refresh
+        </button>
       </div>
       {err && (
         <div className="text-sm text-brand-accent bg-brand-muted/40 border border-brand-border rounded-lg px-3 py-2">

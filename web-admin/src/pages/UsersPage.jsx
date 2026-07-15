@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 
@@ -8,30 +8,24 @@ export default function UsersPage() {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setErr("");
-      setLoading(true);
-      try {
-        const token = await getToken();
-        const r = await api("/admin/users", { method: "GET" }, token);
-        if (!cancelled) {
-          setUsers(r.users || []);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setErr(e.message);
-          setUsers([]);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+  const loadUsers = useCallback(async () => {
+    setErr("");
+    setLoading(true);
+    try {
+      const token = await getToken();
+      const r = await api("/admin/users", { method: "GET" }, token);
+      setUsers(r.users || []);
+    } catch (e) {
+      setErr(e.message);
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
   }, [getToken]);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   async function suspend(userId, suspended) {
     setErr("");
@@ -42,8 +36,7 @@ export default function UsersPage() {
         { method: "POST", body: JSON.stringify({ userId, suspended }) },
         token
       );
-      const r = await api("/admin/users", { method: "GET" }, token);
-      setUsers(r.users || []);
+      await loadUsers();
     } catch (e) {
       setErr(e.message);
     }
@@ -51,11 +44,20 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-brand-ink">Users</h1>
-        <p className="text-brand-sub text-sm mt-1">
-          Monitor citizen accounts and enforcement status.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-brand-ink">Users</h1>
+          <p className="text-brand-sub text-sm mt-1">
+            Monitor citizen accounts and enforcement status.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={loadUsers}
+          className="shrink-0 rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-text hover:bg-brand-muted transition"
+        >
+          Refresh
+        </button>
       </div>
       {err && (
         <div className="text-sm text-brand-accent bg-brand-muted/40 border border-brand-border rounded-lg px-3 py-2">

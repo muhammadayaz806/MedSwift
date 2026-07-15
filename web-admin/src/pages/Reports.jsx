@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 
@@ -9,32 +9,26 @@ export default function Reports() {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setErr("");
-      setLoading(true);
-      try {
-        const token = await getToken();
-        const r = await api("/admin/reports", { method: "GET" }, token);
-        if (!cancelled) {
-          setReports(r.reports || []);
-          setCounts(r.countsByUser || {});
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setErr(e.message);
-          setReports([]);
-          setCounts({});
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+  const loadReports = useCallback(async () => {
+    setErr("");
+    setLoading(true);
+    try {
+      const token = await getToken();
+      const r = await api("/admin/reports", { method: "GET" }, token);
+      setReports(r.reports || []);
+      setCounts(r.countsByUser || {});
+    } catch (e) {
+      setErr(e.message);
+      setReports([]);
+      setCounts({});
+    } finally {
+      setLoading(false);
+    }
   }, [getToken]);
+
+  useEffect(() => {
+    loadReports();
+  }, [loadReports]);
 
   const topOffenders = Object.values(
     reports.reduce((acc, report) => {
@@ -58,12 +52,21 @@ export default function Reports() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-brand-ink">Abuse reports</h1>
-        <p className="text-brand-sub text-sm mt-1">
-          False emergency filings. Users auto-suspend after three validated strikes
-          (handled server-side).
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-brand-ink">Abuse reports</h1>
+          <p className="text-brand-sub text-sm mt-1">
+            False emergency filings. Users auto-suspend after three validated strikes
+            (handled server-side).
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={loadReports}
+          className="shrink-0 rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-text hover:bg-brand-muted transition"
+        >
+          Refresh
+        </button>
       </div>
       {err && (
         <div className="text-sm text-brand-accent bg-brand-muted/40 border border-brand-border rounded-lg px-3 py-2">

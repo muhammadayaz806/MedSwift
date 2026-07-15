@@ -58,11 +58,26 @@ export default function Organizations() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-brand-ink">Organizations</h1>
-        <p className="text-brand-sub text-sm mt-1">
-          Approve new EMS providers and suspend abusive operators.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-brand-ink">Organizations</h1>
+          <p className="text-brand-sub text-sm mt-1">
+            Approve new EMS providers and suspend abusive operators.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            refresh().catch((e) => {
+              setErr(e.message);
+              setOrgs([]);
+              setLoading(false);
+            });
+          }}
+          className="shrink-0 rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-text hover:bg-brand-muted transition"
+        >
+          Refresh
+        </button>
       </div>
       {err && (
         <div className="text-sm text-brand-accent bg-brand-muted/40 border border-brand-border rounded-lg px-3 py-2">

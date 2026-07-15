@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 
@@ -8,43 +8,46 @@ export default function History() {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setErr("");
-      setLoading(true);
-      try {
-        const token = await getToken();
-        const h = await api("/org/emergencies/history", { method: "GET" }, token);
-        if (!cancelled) {
-          const sortedHistory = (h.history || []).sort((a, b) => {
-            const aTime = new Date(a.completedAt || a.createdAt || 0).getTime();
-            const bTime = new Date(b.completedAt || b.createdAt || 0).getTime();
-            return bTime - aTime;
-          });
-          setRows(sortedHistory);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setErr(e.message);
-          setRows([]);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+  const loadHistory = useCallback(async () => {
+    setErr("");
+    setLoading(true);
+    try {
+      const token = await getToken();
+      const h = await api("/org/emergencies/history", { method: "GET" }, token);
+      const sortedHistory = (h.history || []).sort((a, b) => {
+        const aTime = new Date(a.completedAt || a.createdAt || 0).getTime();
+        const bTime = new Date(b.completedAt || b.createdAt || 0).getTime();
+        return bTime - aTime;
+      });
+      setRows(sortedHistory);
+    } catch (e) {
+      setErr(e.message);
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
   }, [getToken]);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-brand-text">Emergency history</h1>
-        <p className="text-brand-sub text-sm mt-1">
-          Completed dispatches linked to your organization.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-brand-text">Emergency history</h1>
+          <p className="text-brand-sub text-sm mt-1">
+            Completed dispatches linked to your organization.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={loadHistory}
+          className="shrink-0 rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-text hover:bg-brand-muted transition"
+        >
+          Refresh
+        </button>
       </div>
       {err && (
         <div className="text-sm text-brand-red bg-brand-muted rounded-lg px-3 py-2">
