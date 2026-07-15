@@ -150,7 +150,16 @@ function RootNavigator() {
         <AuthStack.Screen name="RoleSelection" component={RoleSelectionScreen} />
         <AuthStack.Screen name="Login" component={LoginScreen} />
         <AuthStack.Screen name="Register" component={RegisterScreen} />
-        <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+        <AuthStack.Screen
+          name="ForgotPasswordUser"
+          component={ForgotPasswordScreen}
+          initialParams={{ role: "user" }}
+        />
+        <AuthStack.Screen
+          name="ForgotPasswordDriver"
+          component={ForgotPasswordScreen}
+          initialParams={{ role: "driver" }}
+        />
       </AuthStack.Navigator>
     );
   }

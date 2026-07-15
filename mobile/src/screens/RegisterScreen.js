@@ -36,11 +36,17 @@ export default function RegisterScreen({ navigation }) {
     setMsg("");
     setBusy(true);
     try {
-      await api("/auth/email/otp/send", {
+      const res = await api("/auth/email/otp/send", {
         method: "POST",
         body: JSON.stringify({ email: email.trim(), purpose: "registration" }),
       });
-      setMsg("Verification code sent. Check your email (or backend console in dev).");
+      if (res.devCode) {
+        setMsg(
+          `Email sent to ${email.trim()}. Code: ${res.devCode} (also in backend terminal & spam folder).`
+        );
+      } else {
+        setMsg("Verification code sent. Check your email (and spam folder).");
+      }
       setStep(2);
     } catch (e) {
       setErr(e.message || "Failed to send code");

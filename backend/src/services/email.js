@@ -36,7 +36,9 @@ export async function sendEmail({ to, subject, text, html }) {
 
   const tx = getTransporter();
   if (!tx) {
-    if (process.env.EMAIL_MOCK === "true" || process.env.NODE_ENV === "development") {
+    const mockAllowed =
+      process.env.EMAIL_MOCK === "true" || process.env.NODE_ENV === "development";
+    if (mockAllowed) {
       console.log("[email:mock]", { to, subject, text });
       return { ok: true, mock: true };
     }
@@ -45,15 +47,19 @@ export async function sendEmail({ to, subject, text, html }) {
     );
   }
 
-  await tx.sendMail({ from, to, subject, text, html });
-  return { ok: true };
+  const info = await tx.sendMail({ from, to, subject, text, html });
+  console.log("[email:sent]", { to, messageId: info.messageId, accepted: info.accepted });
+  if (process.env.NODE_ENV === "development") {
+    console.log("[email:console]", { to, subject, text });
+  }
+  return { ok: true, mock: false };
 }
 
 export function otpEmailContent(code, purpose) {
   const purposeLabel =
     purpose === "registration"
       ? "verify your MedSwift account"
-      : purpose === "password_reset"
+      : purpose === "password_reset" || purpose === "password_reset_driver"
         ? "reset your MedSwift password"
         : "complete your request";
 

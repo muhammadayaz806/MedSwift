@@ -7,7 +7,7 @@ const RESEND_COOLDOWN_MS = 60 * 1000;
 const MAX_ATTEMPTS = 5;
 const TOKEN_TTL_MS = 15 * 60 * 1000;
 
-const ALLOWED_PURPOSES = ["registration", "password_reset"];
+const ALLOWED_PURPOSES = ["registration", "password_reset", "password_reset_driver"];
 
 function normalizeEmail(email) {
   return String(email || "")
@@ -64,9 +64,21 @@ export async function sendOtp(email, purpose) {
   });
 
   const { subject, text, html } = otpEmailContent(code, purpose);
-  await sendEmail({ to: normalized, subject, text, html });
+  const emailResult = await sendEmail({ to: normalized, subject, text, html });
 
-  return { ok: true, expiresInSeconds: OTP_TTL_MS / 1000 };
+  const response = { ok: true, expiresInSeconds: OTP_TTL_MS / 1000 };
+  if (process.env.NODE_ENV === "development") {
+    console.log("[email:otp]", {
+      to: normalized,
+      purpose,
+      code,
+      delivery: emailResult.mock ? "mock" : "smtp",
+    });
+    response.devCode = code;
+    response.delivery = emailResult.mock ? "mock" : "smtp";
+  }
+
+  return response;
 }
 
 export async function verifyOtp(email, code, purpose) {

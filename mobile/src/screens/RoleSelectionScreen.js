@@ -14,7 +14,7 @@ export default function RoleSelectionScreen({ navigation }) {
 
       <Pressable
         style={styles.card}
-        onPress={() => navigation.navigate("Login", { role: "user" })}
+        onPress={() => navigation.replace("Login", { role: "user" })}
       >
         <MaterialCommunityIcons name="account-heart" size={36} color="#ef4444" />
         <View style={styles.cardText}>
@@ -28,7 +28,7 @@ export default function RoleSelectionScreen({ navigation }) {
 
       <Pressable
         style={styles.card}
-        onPress={() => navigation.navigate("Login", { role: "driver" })}
+        onPress={() => navigation.replace("Login", { role: "driver" })}
       >
         <MaterialCommunityIcons name="ambulance" size={36} color="#ef4444" />
         <View style={styles.cardText}>

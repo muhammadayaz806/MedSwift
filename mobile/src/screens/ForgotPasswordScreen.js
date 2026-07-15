@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,10 +9,24 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 
-export default function ForgotPasswordScreen({ navigation }) {
+const ROLE_COPY = {
+  user: {
+    sub: "Enter the email for your citizen account. We will send a 6-digit code.",
+    loginRole: "user",
+  },
+  driver: {
+    sub: "Enter the email for your driver account. We will send a 6-digit code.",
+    loginRole: "driver",
+  },
+};
+
+const OTP_PURPOSE = "password_reset";
+
+export default function ForgotPasswordScreen({ navigation, route }) {
+  const role = route.params?.role || "user";
+  const copy = ROLE_COPY[role] || ROLE_COPY.user;
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -21,6 +35,17 @@ export default function ForgotPasswordScreen({ navigation }) {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setStep(1);
+    setEmail("");
+    setCode("");
+    setNewPassword("");
+    setResetToken("");
+    setMsg("");
+    setErr("");
+    setBusy(false);
+  }, [role]);
 
   function validatePassword(pw) {
     if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_]).{8,}$/.test(pw)) {
@@ -34,11 +59,21 @@ export default function ForgotPasswordScreen({ navigation }) {
     setMsg("");
     setBusy(true);
     try {
-      await api("/auth/email/otp/send", {
+      const res = await api("/auth/email/otp/send", {
         method: "POST",
-        body: JSON.stringify({ email: email.trim(), purpose: "password_reset" }),
+        body: JSON.stringify({
+          email: email.trim(),
+          purpose: OTP_PURPOSE,
+          accountRole: role,
+        }),
       });
-      setMsg("Verification code sent. Check your email (or backend console in dev).");
+      if (res.devCode) {
+        setMsg(
+          `Email sent to ${email.trim()}. Check your email (and spam folder).`
+        );
+      } else {
+        setMsg("Verification code sent. Check your email (and spam folder).");
+      }
       setStep(2);
     } catch (e) {
       setErr(e.message || "Failed to send code");
@@ -57,7 +92,7 @@ export default function ForgotPasswordScreen({ navigation }) {
         body: JSON.stringify({
           email: email.trim(),
           code: code.trim(),
-          purpose: "password_reset",
+          purpose: OTP_PURPOSE,
         }),
       });
       setResetToken(res.token);
@@ -87,10 +122,15 @@ export default function ForgotPasswordScreen({ navigation }) {
           email: email.trim(),
           token: resetToken,
           newPassword,
+          purpose: OTP_PURPOSE,
+          accountRole: role,
         }),
       });
       setMsg("Password updated. You can sign in now.");
-      setTimeout(() => navigation.navigate("Login", { role: "user" }), 1200);
+      setTimeout(
+        () => navigation.navigate("Login", { role: copy.loginRole }),
+        1200
+      );
     } catch (e) {
       setErr(e.message || "Reset failed");
     } finally {
@@ -108,9 +148,7 @@ export default function ForgotPasswordScreen({ navigation }) {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.title}>Reset password</Text>
-        <Text style={styles.sub}>
-          Enter the email for your citizen account. We will send a 6-digit code.
-        </Text>
+        <Text style={styles.sub}>{copy.sub}</Text>
 
         {step >= 1 && (
           <TextInput

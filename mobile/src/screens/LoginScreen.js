@@ -22,7 +22,7 @@ const ROLE_COPY = {
     title: "Sign in as driver",
     sub: "Use credentials provided by your organization.",
     showRegister: false,
-    showForgot: false,
+    showForgot: true,
   },
 };
 
@@ -79,7 +79,13 @@ export default function LoginScreen({ navigation, route }) {
         />
 
         {copy.showForgot && (
-          <Pressable onPress={() => navigation.navigate("ForgotPassword")}>
+          <Pressable
+            onPress={() =>
+              navigation.push(
+                role === "driver" ? "ForgotPasswordDriver" : "ForgotPasswordUser"
+              )
+            }
+          >
             <Text style={styles.forgot}>Forgot password?</Text>
           </Pressable>
         )}
