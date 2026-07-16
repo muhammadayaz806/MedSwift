@@ -34,3 +34,6 @@ Thumbs.db
 
 # Testing
 coverage/
+
+# Cloudflare tunnel binary
+cloudflared.exe
