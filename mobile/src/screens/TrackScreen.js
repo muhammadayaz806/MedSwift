@@ -13,6 +13,7 @@ export default function TrackScreen() {
   const [liveTimestamp, setLiveTimestamp] = useState(null);
   const [liveAgeText, setLiveAgeText] = useState("updated just now");
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(true);
   const [region, setRegion] = useState({
     latitude: 24.8607,
     longitude: 67.0011,
@@ -67,6 +68,8 @@ export default function TrackScreen() {
         }
       } catch (e) {
         if (!cancelled) setErr(e.message);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     };
 
@@ -149,6 +152,13 @@ export default function TrackScreen() {
 
       {err ? (
         <Text style={styles.err}>{err}</Text>
+      ) : loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator color="#dc2626" size="large" />
+          <Text style={[styles.muted, { marginTop: 10 }]}>
+            Checking your emergency status…
+          </Text>
+        </View>
       ) : !request ? (
         <View style={styles.center}>
           <Text style={styles.muted}>No active emergency on file.</Text>
