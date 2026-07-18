@@ -34,6 +34,7 @@ export default function DriverTripScreen({ route, navigation }) {
   } = route.params || {};
   const { getToken } = useAuth();
   const timer = useRef(null);
+  const locationSubscription = useRef(null);
   const [destination, setDestination] = useState(() =>
     paramLat != null && paramLng != null
       ? { latitude: paramLat, longitude: paramLng }
@@ -74,19 +75,18 @@ export default function DriverTripScreen({ route, navigation }) {
   useEffect(() => {
     if (!requestId) return undefined;
 
-    async function pushLocation() {
+    let cancelled = false;
+
+    async function pushLocation(lat, lng) {
       try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") return;
-        const pos = await Location.getCurrentPositionAsync({});
         const token = await getToken();
         await api(
           "/driver/location",
           {
             method: "POST",
             body: JSON.stringify({
-              lat: pos.coords.latitude,
-              lng: pos.coords.longitude,
+              lat,
+              lng,
             }),
           },
           token
@@ -96,11 +96,50 @@ export default function DriverTripScreen({ route, navigation }) {
       }
     }
 
-    pushLocation();
-    timer.current = setInterval(pushLocation, 8000);
+    async function startTracking() {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") return;
+
+        if (cancelled) return;
+
+        const initial = await Location.getCurrentPositionAsync({});
+        await pushLocation(initial.coords.latitude, initial.coords.longitude);
+
+        if (cancelled) return;
+
+        locationSubscription.current?.remove?.();
+        locationSubscription.current = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 5000,
+            distanceInterval: 4,
+          },
+          (pos) => {
+            if (!cancelled) {
+              pushLocation(pos.coords.latitude, pos.coords.longitude);
+            }
+          }
+        );
+
+        timer.current = setInterval(async () => {
+          if (cancelled) return;
+          const fallback = await Location.getCurrentPositionAsync({});
+          await pushLocation(fallback.coords.latitude, fallback.coords.longitude);
+        }, 8000);
+      } catch {
+        /* ignore transient GPS errors */
+      }
+    }
+
+    startTracking();
 
     return () => {
+      cancelled = true;
       if (timer.current) clearInterval(timer.current);
+      if (locationSubscription.current?.remove) {
+        locationSubscription.current.remove();
+      }
     };
   }, [requestId, getToken]);
 

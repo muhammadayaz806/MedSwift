@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, Platform } from "react-native";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { onValue, ref } from "firebase/database";
@@ -10,70 +10,130 @@ export default function TrackScreen() {
   const { getToken } = useAuth();
   const [request, setRequest] = useState(null);
   const [live, setLive] = useState(null);
+  const [liveTimestamp, setLiveTimestamp] = useState(null);
+  const [liveAgeText, setLiveAgeText] = useState("updated just now");
   const [err, setErr] = useState("");
+  const [region, setRegion] = useState({
+    latitude: 24.8607,
+    longitude: 67.0011,
+    latitudeDelta: 0.08,
+    longitudeDelta: 0.08,
+  });
 
   useEffect(() => {
-    let unsub = () => { };
+    let unsubscribeLocation = () => {};
     let cancelled = false;
-    (async () => {
+    let intervalId = null;
+
+    const refreshStatus = async () => {
       try {
         const token = await getToken();
         const status = await api("/emergency/status", { method: "GET" }, token);
         if (cancelled) return;
+
         const payload = status.request ?? status;
         if (!payload?.id) {
           setRequest(null);
-          return;
-        }
-        setRequest(payload);
-        const driverId = payload.driverId;
-        if (!driverId) {
           setLive(null);
+          setErr("");
           return;
         }
-        const r = ref(rtdb, `liveLocations/${driverId}`);
-        unsub = onValue(r, (snap) => {
-          setLive(snap.val());
+
+        setRequest(payload);
+        setErr("");
+        setRegion({
+          latitude: payload.location?.latitude ?? 24.8607,
+          longitude: payload.location?.longitude ?? 67.0011,
+          latitudeDelta: 0.08,
+          longitudeDelta: 0.08,
         });
+
+        if (payload.driverId) {
+          const r = ref(rtdb, `liveLocations/${payload.driverId}`);
+          unsubscribeLocation();
+          unsubscribeLocation = onValue(r, (locationSnap) => {
+            if (!cancelled) {
+              const nextLive = locationSnap.val();
+              setLive(nextLive);
+              if (nextLive?.timestamp) {
+                setLiveTimestamp(nextLive.timestamp);
+              }
+            }
+          });
+        } else {
+          setLive(null);
+          setLiveTimestamp(null);
+          unsubscribeLocation();
+        }
       } catch (e) {
         if (!cancelled) setErr(e.message);
       }
-    })();
+    };
+
+    refreshStatus();
+    intervalId = setInterval(refreshStatus, 5000);
+
     return () => {
       cancelled = true;
-      unsub();
+      if (intervalId) clearInterval(intervalId);
+      unsubscribeLocation();
     };
   }, [getToken]);
 
-  const userCoord =
-    request?.location?.latitude != null
-      ? {
-        latitude: request.location.latitude,
-        longitude: request.location.longitude,
-      }
-      : null;
+  const userCoord = useMemo(
+    () =>
+      request?.location?.latitude != null
+        ? {
+            latitude: request.location.latitude,
+            longitude: request.location.longitude,
+          }
+        : null,
+    [request]
+  );
 
-  const ambCoord =
-    live?.latitude != null
-      ? { latitude: live.latitude, longitude: live.longitude }
-      : null;
+  const ambCoord = useMemo(
+    () =>
+      live?.latitude != null
+        ? { latitude: live.latitude, longitude: live.longitude }
+        : null,
+    [live]
+  );
 
-  const centerPoint = ambCoord || userCoord || {
-    latitude: 24.8607,
-    longitude: 67.0011,
-  };
+  const coordsLine = useMemo(
+    () => (userCoord && ambCoord ? [userCoord, ambCoord] : ambCoord ? [ambCoord] : []),
+    [ambCoord, userCoord]
+  );
 
-  const coordsLine =
-    userCoord && ambCoord ? [userCoord, ambCoord] : ambCoord ? [ambCoord] : [];
+  // Only resets to "updated just now" when a genuinely new GPS ping arrives
+  // (i.e. liveTimestamp actually changes). The 5s status poll no longer
+  // touches this timer, so it can't cause a false reset/jump.
+  useEffect(() => {
+    if (!liveTimestamp) {
+      setLiveAgeText("updated just now");
+      return undefined;
+    }
+
+    setLiveAgeText("updated just now");
+    const intervalId = setInterval(() => {
+      const secondsAgo = Math.max(0, Math.floor((Date.now() - liveTimestamp) / 1000));
+      setLiveAgeText(secondsAgo === 0 ? "updated just now" : `updated ${secondsAgo}s ago`);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [liveTimestamp]);
+
+  useEffect(() => {
+    if (!userCoord && !ambCoord) return;
+    const centerPoint = ambCoord || userCoord;
+    setRegion({
+      latitude: centerPoint.latitude,
+      longitude: centerPoint.longitude,
+      latitudeDelta: 0.08,
+      longitudeDelta: 0.08,
+    });
+  }, [ambCoord, userCoord]);
 
   const useGoogle = Platform.OS === "android" || Platform.OS === "ios";
-
-  const initialRegion = {
-    latitude: centerPoint.latitude,
-    longitude: centerPoint.longitude,
-    latitudeDelta: 0.08,
-    longitudeDelta: 0.08,
-  };
 
   return (
     <View style={styles.flex}>
@@ -97,7 +157,8 @@ export default function TrackScreen() {
         <MapView
           style={styles.map}
           provider={useGoogle ? PROVIDER_GOOGLE : undefined}
-          initialRegion={initialRegion}
+          region={region}
+          onRegionChangeComplete={setRegion}
         >
           {userCoord && <Marker coordinate={userCoord} title="Pickup" pinColor="#2563eb" />}
           {ambCoord && (
@@ -135,14 +196,7 @@ export default function TrackScreen() {
         {request?.driverId && !ambCoord && (
           <Text style={[styles.sheetTxt, { marginTop: 4 }]}>Waiting for GPS lock…</Text>
         )}
-        {ambCoord && (
-          <Text style={styles.sheetTxt}>
-            Live · updated{" "}
-            {live?.timestamp
-              ? `${Math.round((Date.now() - live.timestamp) / 1000)}s ago`
-              : "now"}
-          </Text>
-        )}
+        {ambCoord && <Text style={styles.sheetTxt}>Live · {liveAgeText}</Text>}
       </View>
     </View>
   );

@@ -36,6 +36,10 @@ export default function DriverHomeScreen({ navigation }) {
 
   useEffect(() => {
     load().catch((e) => setMsg(e.message));
+    const interval = setInterval(() => {
+      load().catch(() => {});
+    }, 8000);
+    return () => clearInterval(interval);
   }, [load]);
 
   useFocusEffect(
