@@ -6,6 +6,7 @@ import {
   requireRole,
 } from "../middleware/auth.js";
 import { sendPushToTokens } from "../services/notifications.js";
+import { requireValidId, requireValidLatLng, cleanString } from "../utils/validate.js";
 
 const router = Router();
 
@@ -109,6 +110,7 @@ router.post(
     if (!requestId) {
       return res.status(400).json({ error: "requestId required" });
     }
+    requireValidId(requestId, "requestId");
 
     const db = getDb();
     const driverRef = db.collection("drivers").doc(req.user.uid);
@@ -196,9 +198,7 @@ router.post(
   requireRole("driver"),
   async (req, res) => {
     const { lat, lng } = req.body || {};
-    if (typeof lat !== "number" || typeof lng !== "number") {
-      return res.status(400).json({ error: "lat and lng required" });
-    }
+    requireValidLatLng(lat, lng);
 
     const rtdb = getRtdb();
     await rtdb.ref(`liveLocations/${req.user.uid}`).set({
@@ -219,6 +219,7 @@ router.post(
   async (req, res) => {
     const { requestId } = req.body || {};
     if (!requestId) return res.status(400).json({ error: "requestId required" });
+    requireValidId(requestId, "requestId");
 
     const db = getDb();
     const rtdb = getRtdb();
@@ -249,6 +250,8 @@ router.post(
   async (req, res) => {
     const { requestId, notes } = req.body || {};
     if (!requestId) return res.status(400).json({ error: "requestId required" });
+    requireValidId(requestId, "requestId");
+    const cleanNotes = cleanString(notes, { maxLength: 1000, fieldName: "notes" });
 
     const db = getDb();
     const reqSnap = await db.collection("requests").doc(requestId).get();
@@ -262,7 +265,7 @@ router.post(
       reporterId: req.user.uid,
       reportedUserId: rdata.userId,
       requestId,
-      notes: notes || "",
+      notes: cleanNotes,
       createdAt: new Date().toISOString(),
     });
 

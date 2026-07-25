@@ -2,6 +2,7 @@ import { Router } from "express";
 import { getDb } from "../config/firebase.js";
 import { verifyFirebaseToken } from "../middleware/auth.js";
 import { consumeVerificationToken } from "../services/otp.js";
+import { cleanString } from "../utils/validate.js";
 
 const router = Router();
 
@@ -18,9 +19,17 @@ router.post("/profile/bootstrap", verifyFirebaseToken, async (req, res) => {
     return res.status(400).json({ error: "role must be user or organization for signup" });
   }
 
+  const cleanName = cleanString(name, { maxLength: 200, fieldName: "name" });
+  if (!cleanName) {
+    return res.status(400).json({ error: "name is required" });
+  }
+
   const db = getDb();
   const uid = req.user.uid;
-  const email = req.user.email || req.body.email || "";
+  const email = cleanString(req.user.email || req.body.email || "", {
+    maxLength: 320,
+    fieldName: "email",
+  });
 
   const ref = db.collection("users").doc(uid);
   const existing = await ref.get();
@@ -51,7 +60,7 @@ router.post("/profile/bootstrap", verifyFirebaseToken, async (req, res) => {
     }
 
     await ref.set({
-      name,
+      name: cleanName,
       email,
       role: "user",
       status: "active",
@@ -63,7 +72,7 @@ router.post("/profile/bootstrap", verifyFirebaseToken, async (req, res) => {
       ok: true,
       profile: {
         id: uid,
-        name,
+        name: cleanName,
         email,
         role: "user",
         status: "active",
@@ -78,9 +87,20 @@ router.post("/profile/bootstrap", verifyFirebaseToken, async (req, res) => {
         .status(400)
         .json({ error: "organizationName and organizationEmail required" });
     }
+    const cleanOrgName = cleanString(organizationName, {
+      maxLength: 200,
+      fieldName: "organizationName",
+    });
+    const cleanOrgEmail = cleanString(organizationEmail, {
+      maxLength: 320,
+      fieldName: "organizationEmail",
+    }).toLowerCase();
+    if (!cleanOrgName || !cleanOrgEmail || !cleanOrgEmail.includes("@")) {
+      return res.status(400).json({ error: "A valid organizationName and organizationEmail are required" });
+    }
 
     await ref.set({
-      name,
+      name: cleanName,
       email,
       role: "organization",
       status: "active",
@@ -90,8 +110,8 @@ router.post("/profile/bootstrap", verifyFirebaseToken, async (req, res) => {
     });
 
     const orgRef = await db.collection("organizations").add({
-      name: organizationName,
-      email: organizationEmail,
+      name: cleanOrgName,
+      email: cleanOrgEmail,
       verified: false,
       active: false,
       ownerUserId: uid,
@@ -104,7 +124,7 @@ router.post("/profile/bootstrap", verifyFirebaseToken, async (req, res) => {
       ok: true,
       profile: {
         id: uid,
-        name,
+        name: cleanName,
         email,
         role: "organization",
         organizationId: orgRef.id,
@@ -118,10 +138,11 @@ router.post("/profile/bootstrap", verifyFirebaseToken, async (req, res) => {
 
 router.patch("/profile/fcm", verifyFirebaseToken, async (req, res) => {
   const { token } = req.body || {};
-  if (!token) return res.status(400).json({ error: "token required" });
+  const cleanToken = cleanString(token, { maxLength: 4096, fieldName: "token", allowEmoji: true });
+  if (!cleanToken) return res.status(400).json({ error: "token required" });
 
   const db = getDb();
-  await db.collection("users").doc(req.user.uid).update({ fcmToken: token });
+  await db.collection("users").doc(req.user.uid).update({ fcmToken: cleanToken });
   return res.json({ ok: true });
 });
 
@@ -155,7 +176,8 @@ router.get("/profile/me", verifyFirebaseToken, async (req, res) => {
 /** Update the authenticated user's display name (citizens and drivers). */
 router.patch("/profile/name", verifyFirebaseToken, async (req, res) => {
   const { name } = req.body || {};
-  if (!name || !String(name).trim()) {
+  const trimmed = cleanString(name, { maxLength: 200, fieldName: "name" });
+  if (!trimmed) {
     return res.status(400).json({ error: "name is required" });
   }
   const db = getDb();
@@ -165,7 +187,6 @@ router.patch("/profile/name", verifyFirebaseToken, async (req, res) => {
   if (!snap.exists) {
     return res.status(404).json({ error: "Profile not found" });
   }
-  const trimmed = String(name).trim();
   await ref.update({ name: trimmed });
   return res.json({ ok: true, name: trimmed });
 });

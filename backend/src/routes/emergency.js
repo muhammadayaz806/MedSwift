@@ -9,6 +9,7 @@ import {
 import { distanceKm } from "../services/geolocation.js";
 import { sendPushToTokens } from "../services/notifications.js";
 import { getActiveRequest } from "../services/emergencyState.js";
+import { requireValidId, requireValidLatLng } from "../utils/validate.js";
 
 const router = Router();
 const NEARBY_KM = 50;
@@ -20,9 +21,7 @@ router.post(
   requireRole("user"),
   async (req, res) => {
     const { lat, lng } = req.body || {};
-    if (typeof lat !== "number" || typeof lng !== "number") {
-      return res.status(400).json({ error: "lat and lng required (numbers)" });
-    }
+    requireValidLatLng(lat, lng);
 
     const db = getDb();
     const rtdb = getRtdb();
@@ -124,6 +123,7 @@ router.get(
     const db = getDb();
 
     if (requestId) {
+      requireValidId(String(requestId), "requestId");
       const snap = await db.collection("requests").doc(String(requestId)).get();
       if (!snap.exists) return res.status(404).json({ error: "Not found" });
       const data = snap.data();

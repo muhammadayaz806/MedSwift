@@ -5,6 +5,7 @@ import {
   loadUserProfile,
   requireRole,
 } from "../middleware/auth.js";
+import { requireValidId, cleanString } from "../utils/validate.js";
 
 const router = Router();
 
@@ -32,6 +33,7 @@ router.post(
     if (!orgId || typeof approve !== "boolean") {
       return res.status(400).json({ error: "orgId and approve (boolean) required" });
     }
+    requireValidId(orgId, "orgId");
 
     const db = getDb();
     await db.collection("organizations").doc(orgId).update({
@@ -54,6 +56,7 @@ router.post(
     if (!orgId || typeof active !== "boolean") {
       return res.status(400).json({ error: "orgId and active (boolean) required" });
     }
+    requireValidId(orgId, "orgId");
     const db = getDb();
     await db.collection("organizations").doc(orgId).update({ active });
     return res.json({ ok: true });
@@ -70,6 +73,7 @@ router.post(
     if (!userId || typeof suspended !== "boolean") {
       return res.status(400).json({ error: "userId and suspended required" });
     }
+    requireValidId(userId, "userId");
 
     const db = getDb();
     await db.collection("users").doc(userId).update({
@@ -363,6 +367,9 @@ router.post(
     if (!requestId) {
       return res.status(400).json({ error: "requestId required" });
     }
+    requireValidId(requestId, "requestId");
+    const note = cleanString(reviewNote, { maxLength: 1000, fieldName: "reviewNote" });
+
     const db = getDb();
     const reqRef = db.collection("unsuspendRequests").doc(requestId);
     const reqSnap = await reqRef.get();
@@ -381,7 +388,7 @@ router.post(
     await reqRef.update({
       status: "approved",
       reviewedAt: new Date().toISOString(),
-      reviewNote: reviewNote || null,
+      reviewNote: note || null,
       reviewedBy: req.profile?.id || req.user.uid,
     });
 
@@ -400,6 +407,9 @@ router.post(
     if (!requestId) {
       return res.status(400).json({ error: "requestId required" });
     }
+    requireValidId(requestId, "requestId");
+    const note = cleanString(reviewNote, { maxLength: 1000, fieldName: "reviewNote" });
+
     const db = getDb();
     const reqRef = db.collection("unsuspendRequests").doc(requestId);
     const reqSnap = await reqRef.get();
@@ -410,7 +420,7 @@ router.post(
     await reqRef.update({
       status: "rejected",
       reviewedAt: new Date().toISOString(),
-      reviewNote: reviewNote || null,
+      reviewNote: note || null,
       reviewedBy: req.profile?.id || req.user.uid,
     });
 

@@ -7,6 +7,7 @@ import {
   loadUserProfile,
   requireRole,
 } from "../middleware/auth.js";
+import { requireValidId, cleanString } from "../utils/validate.js";
 
 const router = Router();
 
@@ -43,9 +44,24 @@ router.post(
         .json({ error: "name, email, password required" });
     }
 
-    const normalizedEmail = String(email).trim().toLowerCase();
+    const cleanName = cleanString(name, { maxLength: 200, fieldName: "name" });
+    if (!cleanName) {
+      return res.status(400).json({ error: "name is required" });
+    }
 
-    const strongPassword = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_])[ -~_]{8,}$/.test(String(password));
+    const normalizedEmail = cleanString(email, { maxLength: 320, fieldName: "email" })
+      .toLowerCase();
+    if (!normalizedEmail.includes("@")) {
+      return res.status(400).json({ error: "A valid email is required" });
+    }
+
+    // Cap length before regex/Firebase Auth (which itself rejects passwords
+    // over 4096 bytes) so an absurdly long string can't be pushed through.
+    const rawPassword = String(password);
+    if (rawPassword.length > 128) {
+      return res.status(400).json({ error: "Password must be 128 characters or fewer" });
+    }
+    const strongPassword = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*_])[ -~_]{8,}$/.test(rawPassword);
     if (!strongPassword) {
       return res.status(400).json({
         error:
@@ -97,8 +113,8 @@ router.post(
     try {
       const userRecord = await getAuth().createUser({
         email: normalizedEmail,
-        password,
-        displayName: name,
+        password: rawPassword,
+        displayName: cleanName,
       });
       uid = userRecord.uid;
     } catch (e) {
@@ -107,7 +123,7 @@ router.post(
 
     try {
       await db.collection("users").doc(uid).set({
-        name,
+        name: cleanName,
         email: normalizedEmail,
         role: "driver",
         status: "active",
@@ -121,7 +137,7 @@ router.post(
         orgId,
         status: "active",
         isOnline: false,
-        name,
+        name: cleanName,
         email: normalizedEmail,
       });
     } catch (e) {
@@ -182,6 +198,7 @@ router.patch(
   requireRole("organization"),
   async (req, res) => {
     const { id } = req.params;
+    requireValidId(id, "id");
     const { status, isOnline, name, email } = req.body || {};
     const db = getDb();
     const orgSnap = await db
@@ -205,7 +222,7 @@ router.patch(
     const driverUpdate = {};
 
     if (name !== undefined) {
-      const trimmedName = String(name).trim();
+      const trimmedName = cleanString(name, { maxLength: 200, fieldName: "name" });
       if (!trimmedName) {
         return res.status(400).json({ error: "Name cannot be empty" });
       }
@@ -215,9 +232,10 @@ router.patch(
     }
 
     if (email !== undefined) {
-      const normalizedEmail = String(email).trim().toLowerCase();
-      if (!normalizedEmail) {
-        return res.status(400).json({ error: "Email cannot be empty" });
+      const normalizedEmail = cleanString(email, { maxLength: 320, fieldName: "email" })
+        .toLowerCase();
+      if (!normalizedEmail || !normalizedEmail.includes("@")) {
+        return res.status(400).json({ error: "A valid email is required" });
       }
 
       // Check if email is changing
@@ -300,6 +318,7 @@ router.delete(
   requireRole("organization"),
   async (req, res) => {
     const { id } = req.params;
+    requireValidId(id, "id");
     const db = getDb();
     const orgSnap = await db
       .collection("organizations")
@@ -333,6 +352,12 @@ router.post(
   async (req, res) => {
     const { plate, driverId } = req.body || {};
     if (!plate) return res.status(400).json({ error: "plate required" });
+    if (typeof plate !== "string") {
+      return res.status(400).json({ error: "plate must be text" });
+    }
+    if (driverId !== undefined && driverId !== null) {
+      requireValidId(driverId, "driverId");
+    }
 
     const db = getDb();
     const orgSnap = await db
@@ -344,6 +369,9 @@ router.post(
     const orgId = orgSnap.docs[0].id;
 
     const normalizedPlate = plate.trim().replace(/\s+/g, " ");
+    if (normalizedPlate.length > 20) {
+      return res.status(400).json({ error: "Plate number is too long" });
+    }
     if (!/^[A-Z0-9]+([ -][A-Z0-9]+)*$/.test(normalizedPlate)) {
       return res.status(400).json({
         error: "Plate number can only contain uppercase letters, numbers, and single spaces or hyphens as separators. Consecutive spaces/hyphens or leading/trailing separators are not allowed.",
@@ -401,7 +429,11 @@ router.patch(
   requireRole("organization"),
   async (req, res) => {
     const { id } = req.params;
+    requireValidId(id, "id");
     const { driverId } = req.body || {};
+    if (driverId !== undefined && driverId !== null) {
+      requireValidId(driverId, "driverId");
+    }
     const db = getDb();
     const orgSnap = await db
       .collection("organizations")
@@ -449,6 +481,7 @@ router.delete(
   requireRole("organization"),
   async (req, res) => {
     const { id } = req.params;
+    requireValidId(id, "id");
     const db = getDb();
     const orgSnap = await db
       .collection("organizations")
