@@ -695,9 +695,66 @@ router.get(
       .sort((a, b) => getTimestampMs(b.completedAt || b.createdAt) - getTimestampMs(a.completedAt || a.createdAt))
       .slice(0, 100);
 
-    const history = [];
+    // Batch-fetch every unique driver doc needed, in parallel, instead of
+    // one sequential round-trip per history record (which is what made
+    // this endpoint slow — up to 3 sequential Firestore calls x 100 rows).
+    const driverIds = [
+      ...new Set(completedRequests.map((r) => r.driverId).filter(Boolean)),
+    ];
+    const driverSnaps = driverIds.length
+      ? await Promise.all(driverIds.map((id) => db.collection("drivers").doc(id).get()))
+      : [];
+    const driverMap = new Map(
+      driverSnaps
+        .filter((s) => s.exists)
+        .map((s) => [s.id, s.data()])
+    );
 
-    for (const record of completedRequests) {
+    // Now that we have driver data, resolve every unique organization id
+    // that still needs a lookup, again batched in parallel.
+    const orgIdsToFetch = [
+      ...new Set(
+        completedRequests
+          .filter((r) => r.driverId)
+          .map((r) => r.organizationId || driverMap.get(r.driverId)?.orgId)
+          .filter(Boolean)
+      ),
+    ];
+    const historyOrgSnaps = orgIdsToFetch.length
+      ? await Promise.all(orgIdsToFetch.map((id) => db.collection("organizations").doc(id).get()))
+      : [];
+    const historyOrgMap = new Map(
+      historyOrgSnaps
+        .filter((s) => s.exists)
+        .map((s) => [s.id, s.data()])
+    );
+
+    // Ambulance plate: prefer the value snapshotted on the request at
+    // acceptance time (accurate historical record, no lookup needed at
+    // all). Only records missing that snapshot need a live query, and
+    // those are also batched in parallel instead of one-by-one.
+    const driversNeedingAmbulanceLookup = [
+      ...new Set(
+        completedRequests
+          .filter((r) => r.driverId && !r.ambulancePlate)
+          .map((r) => r.driverId)
+      ),
+    ];
+    const ambSnapsForHistory = driversNeedingAmbulanceLookup.length
+      ? await Promise.all(
+          driversNeedingAmbulanceLookup.map((driverId) =>
+            db.collection("ambulances").where("driverId", "==", driverId).limit(1).get()
+          )
+        )
+      : [];
+    const ambulancePlateByDriverForHistory = new Map();
+    driversNeedingAmbulanceLookup.forEach((driverId, i) => {
+      const ambSnap = ambSnapsForHistory[i];
+      const plate = !ambSnap.empty ? ambSnap.docs[0].data().plate : null;
+      if (plate) ambulancePlateByDriverForHistory.set(driverId, plate);
+    });
+
+    const history = completedRequests.map((record) => {
       const row = {
         ...record,
         requestLabel: "Completed emergency",
@@ -707,34 +764,25 @@ router.get(
       };
 
       if (record.driverId) {
-        const driverSnap = await db.collection("drivers").doc(record.driverId).get();
-        const driverData = driverSnap.exists ? driverSnap.data() : null;
+        const driverData = driverMap.get(record.driverId);
         if (driverData?.name) {
           row.driverName = driverData.name;
         }
 
         const orgIdToLookup = record.organizationId || driverData?.orgId;
         if (orgIdToLookup) {
-          const orgSnap = await db.collection("organizations").doc(orgIdToLookup).get();
-          if (orgSnap.exists && orgSnap.data()?.name) {
-            row.organizationName = orgSnap.data().name;
+          const orgData = historyOrgMap.get(orgIdToLookup);
+          if (orgData?.name) {
+            row.organizationName = orgData.name;
           }
         }
 
         // Prefer the plate snapshotted at acceptance time (accurate historical record).
-        // Fall back to live driver→ambulance lookup only for older requests.
-        if (record.ambulancePlate) {
-          row.ambulancePlate = record.ambulancePlate;
-        } else {
-          const ambSnap = await db
-            .collection("ambulances")
-            .where("driverId", "==", record.driverId)
-            .limit(1)
-            .get();
-          if (!ambSnap.empty && ambSnap.docs[0].data().plate) {
-            row.ambulancePlate = ambSnap.docs[0].data().plate;
-          }
-        }
+        // Fall back to the batched live driver→ambulance lookup only for older requests.
+        row.ambulancePlate =
+          record.ambulancePlate ||
+          ambulancePlateByDriverForHistory.get(record.driverId) ||
+          null;
       }
 
       const dateSource = record.createdAt || record.completedAt;
@@ -745,8 +793,8 @@ router.get(
         }
       }
 
-      history.push(row);
-    }
+      return row;
+    });
 
     return res.json({ history });
   }
