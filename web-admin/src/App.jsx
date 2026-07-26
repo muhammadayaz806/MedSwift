@@ -9,6 +9,7 @@ import DriversPage from "./pages/DriversPage";
 import Emergencies from "./pages/Emergencies";
 import Reports from "./pages/Reports";
 import UnsuspendRequestsPage from "./pages/UnsuspendRequestsPage";
+import NotFound from "./pages/NotFound";
 
 function PrivateShell() {
   const { loading, profile } = useAuth();
@@ -31,6 +32,7 @@ function PrivateShell() {
         <Route path="emergencies" element={<Emergencies />} />
         <Route path="reports" element={<Reports />} />
         <Route path="unsuspend-requests" element={<UnsuspendRequestsPage />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );

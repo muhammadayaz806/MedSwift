@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
+import { trackVisit } from "../pages/NotFound";
 
 const BASE_LINKS = [
   { to: "/", label: "Organizations" },
@@ -9,19 +10,33 @@ const BASE_LINKS = [
   { to: "/drivers", label: "Drivers" },
   { to: "/emergencies", label: "Emergencies" },
   { to: "/reports", label: "Reports" },
-  { to: "/unsuspend-requests", label: "Unsuspend Requests", badgeKey: "unsuspend" },
+  {
+    to: "/unsuspend-requests",
+    label: "Unsuspend Requests",
+    badgeKey: "unsuspend",
+  },
 ];
 
 export default function Shell() {
   const { logout, profile, getToken } = useAuth();
   const [open, setOpen] = useState(false);
   const [pendingUnsuspend, setPendingUnsuspend] = useState(0);
+  const location = useLocation();
+  useEffect(() => {
+    trackVisit(location.pathname);
+  }, [location.pathname]);
 
   const fetchPendingCount = useCallback(async () => {
     try {
       const token = await getToken();
-      const data = await api("/admin/unsuspend-requests", { method: "GET" }, token);
-      const count = (data.requests || []).filter((r) => r.status === "pending").length;
+      const data = await api(
+        "/admin/unsuspend-requests",
+        { method: "GET" },
+        token,
+      );
+      const count = (data.requests || []).filter(
+        (r) => r.status === "pending",
+      ).length;
       setPendingUnsuspend(count);
     } catch {
       // silently fail — badge is non-critical
