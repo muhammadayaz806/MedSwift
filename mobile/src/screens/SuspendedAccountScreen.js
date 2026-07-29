@@ -47,24 +47,37 @@ export default function SuspendedAccountScreen({ navigation, route }) {
 
   // ── Check if a request already exists ─────────────────────────────────────
   const checkStatus = useCallback(async () => {
-    const tokenToCheck = resolvedToken;
+  setChecking(true);
+  setErr("");
+  try {
+    let tokenToCheck = resolvedToken;
+    if (authUser) {
+      try {
+        tokenToCheck = await getToken();
+        setResolvedToken(tokenToCheck);
+      } catch {
+        // fall back to whatever we already had, if anything
+      }
+    }
     if (!tokenToCheck) {
       setChecking(false);
       return;
     }
-    setChecking(true);
-    try {
-      const data = await api("/auth/profile/unsuspend-status", { method: "GET" }, tokenToCheck);
-      if (data.exists) {
-        setStatus(data.status);
-        setRequestId(data.requestId);
-      }
-    } catch {
-      // ignore — treat as no existing request
-    } finally {
-      setChecking(false);
+
+    const data = await api("/auth/profile/unsuspend-status", { method: "GET" }, tokenToCheck);
+    if (data.exists) {
+      setStatus(data.status);
+      setRequestId(data.requestId);
+    } else {
+      setStatus(null);
+      setRequestId(null);
     }
-  }, [resolvedToken]);
+  } catch (e) {
+    setErr(e.message || "Couldn't check status. Pull to refresh and try again.");
+  } finally {
+    setChecking(false);
+  }
+}, [resolvedToken, authUser, getToken]);
 
   useEffect(() => {
     if (resolvedToken || (!paramIdToken && !authUser)) {
@@ -175,6 +188,7 @@ export default function SuspendedAccountScreen({ navigation, route }) {
           )}
           <Pressable style={styles.refreshBtn} onPress={checkStatus}>
             <Text style={styles.refreshLbl}>↻ Refresh status</Text>
+            {!!err && <Text style={styles.err}>{err}</Text>}
           </Pressable>
         </View>
       ) : (
